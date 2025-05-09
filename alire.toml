@@ -1,0 +1,30 @@
+name = "postfix_calc"
+description = "Postfix calculator"
+version = "0.1.0-dev"
+
+authors = ["Paul Jarrett"]
+maintainers = ["Paul Jarrett <jarrett.paul.young@gmail.com>"]
+maintainers-logins = ["pyjarrett"]
+licenses = "Apache-2.0"
+website = ""
+tags = []
+
+executables = ["postfix_calc"]
+
+[build-switches]
+Development.Debug_Info = "Yes"
+Development.Contracts = "Yes"
+Development.Runtime_Checks = [
+    "-gnato",        # Enable numeric overflow checking;
+    "-fstack-check", # Stack overflow checking
+    "-gnatVa"        # All validity checks
+]
+
+Release.Runtime_Checks = "None"
+# "*".Compile_Checks = "Errors"
+"*".Ada_Version = "Ada2022"
+"*".Style_Checks = [
+    "-gnaty-d",   # Disable no DOS line terminators
+    "-gnatyM200", # Maximum line length
+    "-gnatyO"     # Overriding subprograms explicitly marked as such]
+]
