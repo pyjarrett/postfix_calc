@@ -1,10 +1,11 @@
-with Calc;
 with Ada.Text_IO;
 
-procedure Postfix_Calc is
-   package AIO renames Ada.Text_IO;
-   Process_Result : Calc.Machine_Status;
+with Machines;
+
+procedure Postfix_Calc with SPARK_Mode => Off is
+   M : Machines.Machine;
 begin
-   Process_Result := Calc.Process ("1 2 +");
-   AIO.Put_Line (Process_Result'Image);
+   Machines.Push (M, 20.0);
+   Machines.Push (M, 30.0);
+   Ada.Text_IO.Put_Line (Machines.Status (M)'Image);
 end Postfix_Calc;

@@ -17,7 +17,7 @@ Development.Contracts = "Yes"
 Development.Runtime_Checks = [
     "-gnato",        # Enable numeric overflow checking;
     "-fstack-check", # Stack overflow checking
-    "-gnatVa"        # All validity checks
+    "-gnatVa",       # All validity checks
 ]
 
 Release.Runtime_Checks = "None"
@@ -26,5 +26,8 @@ Release.Runtime_Checks = "None"
 "*".Style_Checks = [
     "-gnaty-d",   # Disable no DOS line terminators
     "-gnatyM200", # Maximum line length
-    "-gnatyO"     # Overriding subprograms explicitly marked as such]
+    "-gnatyO",    # Overriding subprograms explicitly marked as such]
 ]
+
+[[depends-on]]
+gnatprove = "^15.1.0"
