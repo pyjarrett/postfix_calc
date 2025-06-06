@@ -1,3 +1,5 @@
+with Scanners;
+
 package body Scanners
   with SPARK_Mode => On
 is
@@ -26,9 +28,15 @@ is
 
    procedure Next (Self : in out Scanner) is
    begin
-      if Self.Cursor <= Self.Length then
+      if Has_Next (Self) then
          Self.Cursor := Self.Cursor + 1;
       end if;
    end Next;
+
+   procedure Next_Token (Self : in out Scanner; Tk : out Token) is
+   begin
+      Tk := (Kind => Scanners.End_Of_Input);
+      Next (Self);
+   end Next_Token;
 
 end Scanners;
