@@ -13,7 +13,7 @@ begin
 
    loop
       declare
-         Input : String := Ada.Text_IO.Get_Line;
+         Input : constant String := Ada.Text_IO.Get_Line;
          use type Scanners.Small_Int;
       begin
          exit when Input = "exit" or else Input = "quit";

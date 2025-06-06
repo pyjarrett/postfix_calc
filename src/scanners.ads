@@ -20,7 +20,7 @@ is
      Pre  => Input'Length <= Max_Input_Length,
      Post => Remaining (Self) = Input'Length;
 
-   procedure Take_Lexeme (Self : in out Scanner; Output : in out Lexeme)
+   procedure Take_Lexeme (Self : in out Scanner; Output : out Lexeme)
    with
      Post =>
        Lexeme_Size (Self) = 0 and then Width (Output) = Lexeme_Size (Self'Old);
@@ -49,5 +49,14 @@ private
       Upper : Range_Upper := 1;
    end record
    with Invariant => Lower <= Upper and then Upper - Lower <= Range_Size'Last;
+
+   function Lexeme_Size (Self : Scanner) return Range_Size
+   is (Self.Cursor - Self.Start);
+
+   function Remaining (Self : Scanner) return Range_Size
+   is (Self.Length - (Self.Cursor - 1));
+
+   function Width (Self : Lexeme) return Range_Size
+   is (Self.Upper - Self.Lower);
 
 end Scanners;
