@@ -14,10 +14,6 @@ is
       Self.Cursor := 1;
       Self.Length := Input'Length;
       Self.State := (if Self.Length = 0 then Empty else Ready);
-      pragma Assert (Self.Cursor = 1);
-      pragma Assert (Self.Length = Input'Length);
-      pragma Assert (Input'Length - (1 - 1) = Input'Length);
-      pragma Assert (Self.Length - (Self.Cursor - 1) = Input'Length);
    end Load_Input;
 
    procedure Take_Lexeme (Self : in out Scanner; Output : out Lexeme) is
