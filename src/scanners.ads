@@ -106,10 +106,10 @@ private
       Cursor : Range_Upper := 1;
       Length : Range_Size := 0;
    end record
-   with
-     Invariant =>
-       (Length = 0 and then Start = 1 and then Cursor = 1)
-       or else (Start <= Cursor and then Cursor <= Length + 1);
+   with Invariant => Has_Valid_Cursor (Scanner);
+
+   function Has_Valid_Cursor (Self : Scanner) return Boolean
+   is (Self.Start <= Self.Cursor and then Self.Cursor <= Self.Length + 1);
 
    function Has_Input (Self : Scanner) return Boolean
    is (Self.Length > 0);
