@@ -100,16 +100,27 @@ private
 
    -- Scanner --
 
+   type Scanner_State is (Empty, Ready, Complete);
+
    type Scanner is record
       Input  : String (1 .. Max_Input_Length);
       Start  : Range_Lower := 1;
       Cursor : Range_Upper := 1;
       Length : Range_Size := 0;
+      State  : Scanner_State := Empty;
    end record
-   with Invariant => Has_Valid_Cursor (Scanner);
+   with
+     Invariant =>
+       Has_Valid_Cursor (Scanner) and then Has_Valid_State (Scanner);
 
    function Has_Valid_Cursor (Self : Scanner) return Boolean
    is (Self.Start <= Self.Cursor and then Self.Cursor <= Self.Length + 1);
+
+   function Has_Valid_State (Self : Scanner) return Boolean
+   is (case Self.State is
+         when Empty =>
+           Self.Length = 0 and then Self.Start = 1 and then Self.Cursor = 1,
+         when others => true);
 
    function Has_Input (Self : Scanner) return Boolean
    is (Self.Length > 0);

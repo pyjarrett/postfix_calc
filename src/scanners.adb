@@ -13,6 +13,7 @@ is
       Self.Start := 1;
       Self.Cursor := 1;
       Self.Length := Input'Length;
+      Self.State := (if Self.Length = 0 then Empty else Ready);
       pragma Assert (Self.Cursor = 1);
       pragma Assert (Self.Length = Input'Length);
       pragma Assert (Input'Length - (1 - 1) = Input'Length);
@@ -33,6 +34,7 @@ is
    begin
       if Has_Next (Self) then
          Self.Cursor := Self.Cursor + 1;
+         Self.State := (if Has_Next (Self) then Ready else Complete);
       end if;
    end Next;
 
@@ -45,10 +47,13 @@ is
            Loop_Invariant
              (Has_Next (Self)
                 and then Remaining_Characters (Self) > 0
-                and then Self.Start <= Self.Cursor);
+                and then Self.Start <= Self.Cursor
+                and then Has_Valid_Cursor (Self)
+                and then Has_Valid_State (Self));
          pragma Loop_Variant (Decreases => Remaining_Characters (Self));
          Next (Self);
       end loop;
+      Self.State := (if Has_Next (Self) then Ready else Complete);
    end Next_Token;
 
 end Scanners;
