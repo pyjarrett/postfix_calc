@@ -149,26 +149,35 @@ private
        then Self.Input (Range_Index (Self.Cursor))
        else No_More_Characters);
 
+   function Is_Valid (Self : Scanner) return Boolean
+   is (Has_Valid_Cursor (Self) and then Has_Valid_State (Self));
+
    procedure Skip_Whitespace
      (Self : in out Scanner; Skipped_Whitespace : out Boolean)
    with
      Global => null,
      Pre    =>
-       Has_Valid_Cursor (Self)
-       and then Has_Valid_State (Self)
+       Is_Valid (Self)
        and then Has_Next (Self)
        and then Has_More_Characters (Self),
      Post   =>
-       (Has_Valid_Cursor (Self) and then Has_Valid_State (Self))
+       Is_Valid (Self)
        and then (Self.State = (if Has_Next (Self) then Ready else Complete))
+       and then (if Has_Next (Self) then not ACH.Is_Space (Peek (Self)))
+       and then (if not Has_Next (Self)
+                 then
+                   Skipped_Whitespace and then not ACH.Is_Space (Peek (Self)))
+       and then (if Skipped_Whitespace
+                 then
+                   Remaining_Characters (Self)
+                   < Remaining_Characters (Self'Old))
        and then ((Skipped_Whitespace
                   and then Remaining_Characters (Self)
                            < Remaining_Characters (Self'Old))
                  or else (not Skipped_Whitespace))
-       and then (if not Has_Next (Self)
+       and then (if not Skipped_Whitespace
                  then
-                   Skipped_Whitespace and then not ACH.Is_Space (Peek (Self)))
-       and then (if Has_Next (Self) then not ACH.Is_Space (Peek (Self))),
-     Always_Terminates;
+                   Remaining_Characters (Self)
+                   = Remaining_Characters (Self'Old));
 
 end Scanners;

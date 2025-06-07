@@ -32,29 +32,26 @@ is
    end Next;
 
    procedure Next_Token (Self : in out Scanner; Tk : out Token) is
-      Skipped_Whitespace : Boolean;
    begin
       Tk := (Kind => Scanners.End_Of_Input);
 
-      Skip_Whitespace (Self, Skipped_Whitespace);
-      if not Has_Next (Self) then
-         pragma Assert (Skipped_Whitespace);
-         pragma Assert (not ACH.Is_Space (Peek (Self)));
-         return;
-      end if;
+      declare
+         Skipped_Whitespace : Boolean;
+         Old                : Range_Size := Remaining_Characters (Self);
+      begin
+         Skip_Whitespace (Self, Skipped_Whitespace);
+         if not Has_Next (Self) then
+            pragma Assert (Remaining_Characters (Self) < Old);
+            pragma Assert (Skipped_Whitespace);
+            pragma Assert (not ACH.Is_Space (Peek (Self)));
+            return;
+         end if;
+      end;
 
       pragma Assert (not ACH.Is_Space (Peek (Self)));
+      pragma Assert (Has_Next (Self));
 
-      while Has_Next (Self) loop
-         pragma
-           Loop_Invariant
-             (Has_Next (Self)
-                and then Remaining_Characters (Self) > 0
-                and then Has_Valid_Cursor (Self)
-                and then Has_Valid_State (Self));
-         pragma Loop_Variant (Decreases => Remaining_Characters (Self));
-         Next (Self);
-      end loop;
+      Next (Self);
       Self.State := (if Has_Next (Self) then Ready else Complete);
    end Next_Token;
 
