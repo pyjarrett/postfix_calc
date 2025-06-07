@@ -100,7 +100,7 @@ private
 
    -- Scanner --
 
-   type Scanner_State is (Empty, Ready, After_Whitespace, Complete);
+   type Scanner_State is (Empty, Ready, Complete);
 
    type Scanner is record
       Input  : String (1 .. Max_Input_Length);
@@ -147,7 +147,8 @@ private
        then Self.Input (Range_Index (Self.Cursor))
        else No_More_Characters);
 
-   procedure Skip_Whitespace (Self : in out Scanner)
+   procedure Skip_Whitespace
+     (Self : in out Scanner; Skipped_Whitespace : out Boolean)
    with
      Global => null,
      Pre    =>
@@ -155,6 +156,13 @@ private
        and then Has_Valid_State (Self)
        and then Has_Next (Self)
        and then Has_More_Characters (Self),
-     Post   => Self.State = After_Whitespace or else Self.State = Complete;
+     Post   =>
+       (Has_Valid_Cursor (Self) and then Has_Valid_State (Self))
+       and then (Self.State = (if Has_Next (Self) then Ready else Complete))
+       and then ((Skipped_Whitespace
+                  and then Remaining_Characters (Self)
+                           < Remaining_Characters (Self'Old))
+                 or else (not Skipped_Whitespace)),
+     Always_Terminates;
 
 end Scanners;

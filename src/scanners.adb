@@ -35,8 +35,12 @@ is
    end Next;
 
    procedure Next_Token (Self : in out Scanner; Tk : out Token) is
+      Skipped_Whitespace : Boolean;
    begin
       Tk := (Kind => Scanners.End_Of_Input);
+
+      Skip_Whitespace (Self, Skipped_Whitespace);
+      pragma Unreferenced (Skipped_Whitespace);
 
       while Has_Next (Self) loop
          pragma
@@ -51,19 +55,34 @@ is
       Self.State := (if Has_Next (Self) then Ready else Complete);
    end Next_Token;
 
-   procedure Skip_Whitespace (Self : in out Scanner) is
+   procedure Skip_Whitespace
+     (Self : in out Scanner; Skipped_Whitespace : out Boolean) is
    begin
-      while Has_Next (Self) and then Ach.Is_Space (Peek (Self)) loop
+      Skipped_Whitespace := False;
+      while Has_Next (Self) and then ACH.Is_Space (Peek (Self)) loop
          pragma
            Loop_Invariant
              (Has_Next (Self)
                 and then Remaining_Characters (Self) > 0
                 and then Has_Valid_Cursor (Self)
-                and then Has_Valid_State (Self));
+                and then Has_Valid_State (Self)
+                and then ((not Skipped_Whitespace
+                           and then Remaining_Characters (Self)
+                                    = Remaining_Characters (Self'Loop_Entry))
+                          or else (Skipped_Whitespace
+                                   and then Remaining_Characters (Self)
+                                            < Remaining_Characters
+                                                (Self'Loop_Entry))));
          pragma Loop_Variant (Decreases => Remaining_Characters (Self));
          Next (Self);
+         Skipped_Whitespace := True;
       end loop;
-      Self.State := (if Has_Next (Self) then After_Whitespace else Complete);
+
+      if Skipped_Whitespace then
+         Self.Start := Self.Cursor;
+      end if;
+
+      Self.State := (if Has_Next (Self) then Ready else Complete);
    end Skip_Whitespace;
 
 end Scanners;
