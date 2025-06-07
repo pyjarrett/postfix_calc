@@ -43,7 +43,6 @@ is
            Loop_Invariant
              (Has_Next (Self)
                 and then Remaining_Characters (Self) > 0
-                and then Self.Start <= Self.Cursor
                 and then Has_Valid_Cursor (Self)
                 and then Has_Valid_State (Self));
          pragma Loop_Variant (Decreases => Remaining_Characters (Self));
@@ -51,5 +50,20 @@ is
       end loop;
       Self.State := (if Has_Next (Self) then Ready else Complete);
    end Next_Token;
+
+   procedure Skip_Whitespace (Self : in out Scanner) is
+   begin
+      while Has_Next (Self) and then Ach.Is_Space (Peek (Self)) loop
+         pragma
+           Loop_Invariant
+             (Has_Next (Self)
+                and then Remaining_Characters (Self) > 0
+                and then Has_Valid_Cursor (Self)
+                and then Has_Valid_State (Self));
+         pragma Loop_Variant (Decreases => Remaining_Characters (Self));
+         Next (Self);
+      end loop;
+      Self.State := (if Has_Next (Self) then After_Whitespace else Complete);
+   end Skip_Whitespace;
 
 end Scanners;
