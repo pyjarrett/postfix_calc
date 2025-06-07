@@ -20,7 +20,12 @@ begin
          Scanners.Load_Input (S, Input);
 
          while Scanners.Remaining (S) > 0 loop
-            Scanners.Next (S);
+            declare
+               Tk : Scanners.Token;
+            begin
+               Scanners.Next_Token (S, Tk);
+               Ada.Text_IO.Put_Line (Tk'Image);
+            end;
          end loop;
       end;
    end loop;
