@@ -1,8 +1,11 @@
 with Scanners;
 
+with Ada.Characters.Handling;
+
 package body Scanners
   with SPARK_Mode => On
 is
+   package ACH renames Ada.Characters.Handling;
 
    procedure Load_Input (Self : in out Scanner; Input : String) is
    begin
@@ -36,7 +39,16 @@ is
    procedure Next_Token (Self : in out Scanner; Tk : out Token) is
    begin
       Tk := (Kind => Scanners.End_Of_Input);
-      Next (Self);
+
+      while Has_Next (Self) loop
+         pragma
+           Loop_Invariant
+             (Has_Next (Self)
+                and then Remaining_Characters (Self) > 0
+                and then Self.Start <= Self.Cursor);
+         pragma Loop_Variant (Decreases => Remaining_Characters (Self));
+         Next (Self);
+      end loop;
    end Next_Token;
 
 end Scanners;

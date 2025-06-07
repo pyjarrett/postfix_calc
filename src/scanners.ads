@@ -21,16 +21,25 @@ is
 
    No_More_Characters : constant Character := Ada.Characters.Latin_1.NUL;
 
-   function Is_Done (Self : Scanner) return Boolean;
+   function Has_Input (Self : Scanner) return Boolean;
 
-   function Lexeme_Size (Self : Scanner) return Range_Size;
+   function Has_More_Characters (Self : Scanner) return Boolean;
 
-   function Remaining (Self : Scanner) return Range_Size;
+   function Lexeme_Size (Self : Scanner) return Range_Size
+   with Post => Lexeme_Size'Result <= Input_Size (Self);
+
+   function Remaining_Characters (Self : Scanner) return Range_Size;
+
+   function Input_Size (Self : Scanner) return Range_Size;
 
    procedure Load_Input (Self : in out Scanner; Input : String)
    with
-     Pre  => Input'Length <= Max_Input_Length,
-     Post => Remaining (Self) = Input'Length;
+     Depends => (Self => +Input),
+     Pre     => 0 < Input'Length and then Input'Length <= Max_Input_Length,
+     Post    =>
+       Remaining_Characters (Self) = Input'Length
+       and then Has_More_Characters (Self)
+       and then Input_Size (Self) = Input'Length;
 
    procedure Take_Lexeme (Self : in out Scanner; Output : out Lexeme)
    with
@@ -38,18 +47,28 @@ is
        Lexeme_Size (Self) = 0 and then Width (Output) = Lexeme_Size (Self'Old);
 
    function Has_Next (Self : Scanner) return Boolean
-   with Global => null;
+   with
+     Global => null,
+     Post   =>
+       ((Has_Next'Result and then Remaining_Characters (Self) > 0)
+        or else (not Has_Next'Result and then Remaining_Characters (Self) = 0)
+        or else (not Has_Next'Result and then not Has_Input (Self)));
 
    function Peek (Self : Scanner) return Character
    with Global => null;
 
    procedure Next (Self : in out Scanner)
    with
-     Global => null,
-     Pre    => Has_Next (Self),
-     Post   =>
-       Lexeme_Size (Self) = Lexeme_Size (Self'Old) + 1
-       and then Remaining (Self) < Remaining (Self'Old);
+     Global         => null,
+     Contract_Cases =>
+       (Has_Next (Self)     =>
+          Lexeme_Size (Self) = Lexeme_Size (Self'Old) + 1
+          and then Remaining_Characters (Self)
+                   < Remaining_Characters (Self'Old),
+        not Has_Next (Self) =>
+          Lexeme_Size (Self) = Lexeme_Size (Self'Old)
+          and then Remaining_Characters (Self)
+                   = Remaining_Characters ((Self'Old)));
 
    -- Tokens --
 
@@ -61,11 +80,10 @@ is
 
    procedure Next_Token (Self : in out Scanner; Tk : out Token)
    with
-     Global         => null,
-     Pre            => Has_Next (Self),
-     Contract_Cases =>
-       (Has_Next (self) => Remaining (Self) < Remaining (Self'Old),
-        others          => Remaining (Self) = Remaining (Self'Old));
+     Global => null,
+     Pre    => Has_Next (Self) and then Has_More_Characters (Self),
+     Post   => Remaining_Characters (Self) < Remaining_Characters (Self'Old),
+     Always_Terminates;
 
 private
 
@@ -88,19 +106,28 @@ private
       Cursor : Range_Upper := 1;
       Length : Range_Size := 0;
    end record
-   with Invariant => Start <= Cursor and then Cursor <= Length + 1;
+   with
+     Invariant =>
+       (Length = 0 and then Start = 1 and then Cursor = 1)
+       or else (Start <= Cursor and then Cursor <= Length + 1);
 
-   function Is_Done (Self : Scanner) return Boolean
-   is (Self.Start = Self.Length + 1);
+   function Has_Input (Self : Scanner) return Boolean
+   is (Self.Length > 0);
+
+   function Has_More_Characters (Self : Scanner) return Boolean
+   is (Self.Cursor <= Self.Length);
 
    function Lexeme_Size (Self : Scanner) return Range_Size
    is (Self.Cursor - Self.Start);
 
-   function Remaining (Self : Scanner) return Range_Size
+   function Remaining_Characters (Self : Scanner) return Range_Size
    is (Self.Length - (Self.Cursor - 1));
 
+   function Input_Size (Self : Scanner) return Range_Size
+   is (Self.Length);
+
    function Has_Next (Self : Scanner) return Boolean
-   is (Self.Cursor in Range_Index and then Self.Cursor <= Self.Length);
+   is (Self.Cursor in Range_Index and then Has_More_Characters (Self));
 
    function Peek (Self : Scanner) return Character
    is (if Has_Next (Self)

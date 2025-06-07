@@ -19,7 +19,7 @@ begin
          exit when Input = "exit" or else Input = "quit";
          Scanners.Load_Input (S, Input);
 
-         while Scanners.Remaining (S) > 0 loop
+         while Scanners.Remaining_Characters (S) > 0 loop
             declare
                Tk : Scanners.Token;
             begin
