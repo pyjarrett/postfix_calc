@@ -1,11 +1,8 @@
 with Scanners;
 
-with Ada.Characters.Handling;
-
 package body Scanners
   with SPARK_Mode => On
 is
-   package ACH renames Ada.Characters.Handling;
 
    procedure Load_Input (Self : in out Scanner; Input : String) is
    begin
@@ -40,7 +37,13 @@ is
       Tk := (Kind => Scanners.End_Of_Input);
 
       Skip_Whitespace (Self, Skipped_Whitespace);
-      pragma Unreferenced (Skipped_Whitespace);
+      if not Has_Next (Self) then
+         pragma Assert (Skipped_Whitespace);
+         pragma Assert (not ACH.Is_Space (Peek (Self)));
+         return;
+      end if;
+
+      pragma Assert (not ACH.Is_Space (Peek (Self)));
 
       while Has_Next (Self) loop
          pragma
@@ -77,6 +80,10 @@ is
          Next (Self);
          Skipped_Whitespace := True;
       end loop;
+
+      if Has_Next (Self) then
+         pragma Assert (not ACH.Is_Space (Peek (Self)));
+      end if;
 
       if Skipped_Whitespace then
          Self.Start := Self.Cursor;

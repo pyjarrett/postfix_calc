@@ -1,8 +1,10 @@
 with Ada.Characters.Latin_1;
+with Ada.Characters.Handling;
 
 package Scanners
   with SPARK_Mode => On
 is
+   package ACH renames Ada.Characters.Handling;
 
    Max_Input_Length : constant := 1024;
    subtype Small_Int is Integer range 0 .. Max_Input_Length + 1;
@@ -162,7 +164,11 @@ private
        and then ((Skipped_Whitespace
                   and then Remaining_Characters (Self)
                            < Remaining_Characters (Self'Old))
-                 or else (not Skipped_Whitespace)),
+                 or else (not Skipped_Whitespace))
+       and then (if not Has_Next (Self)
+                 then
+                   Skipped_Whitespace and then not ACH.Is_Space (Peek (Self)))
+       and then (if Has_Next (Self) then not ACH.Is_Space (Peek (Self))),
      Always_Terminates;
 
 end Scanners;
