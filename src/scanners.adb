@@ -140,4 +140,26 @@ is
       return S.Input (Tk.Lexeme.Lower .. Tk.Lexeme.Upper - 1);
    end Image;
 
+   procedure Tokenize
+     (Self       : in out Scanner;
+      Tokens     : in out Token_Array;
+      Num_Tokens : out Natural)
+   is
+      Next_Token_Index : Positive := Tokens'First;
+   begin
+      while Has_More_Characters (Self) loop
+         pragma
+           Loop_Invariant
+             (Is_Valid (Self)
+                and then Remaining_Characters (Self)
+                         <= Remaining_Characters (Self'Loop_Entry));
+         pragma
+           Loop_Variant
+             (Decreases => Remaining_Characters (Self),
+              Increases => Next_Token_Index);
+         Next (Self);
+      end loop;
+      Num_Tokens := Next_Token_Index - 1;
+   end Tokenize;
+
 end Scanners;

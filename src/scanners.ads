@@ -85,9 +85,12 @@ is
    type Token_Kind is (Word, End_Of_Input);
 
    type Token is record
-      Kind   : Token_Kind;
+      Kind   : Token_Kind := End_Of_Input;
       Lexeme : Lexeme_Range;
    end record;
+
+   Max_Tokens : constant := 512;
+   type Token_Array is array (Positive range <>) of Token;
 
    procedure Next_Token (Self : in out Scanner; Tk : out Token)
    with
@@ -96,7 +99,9 @@ is
      Post   =>
        (Remaining_Characters (Self) < Remaining_Characters (Self'Old))
        and then (Tk.Kind = End_Of_Input
-                 or else (Tk.Kind = Word and then Width (Tk.Lexeme) > 0)),
+                 or else (Tk.Kind = Word
+                          and then Width (Tk.Lexeme) > 0
+                          and then Is_Word (Self, Tk))),
      Always_Terminates;
 
    function Image (Tk : Token; S : Scanner) return String
@@ -106,6 +111,13 @@ is
 
    function Contains (Self : Scanner; Tk : Token) return Boolean;
    function Contains (Self : Scanner; Lexeme : Lexeme_Range) return Boolean;
+   function Is_Word (Self : Scanner; Tk : Token) return Boolean;
+
+   procedure Tokenize
+     (Self       : in out Scanner;
+      Tokens     : in out Token_Array;
+      Num_Tokens : out Natural)
+   with Global => null, Always_Terminates, Pre => Tokens'Length > 0;
 
 private
 
@@ -208,7 +220,7 @@ private
    is (Contains (Self, Tk.Lexeme));
 
    function Contains (Self : Scanner; Lexeme : Lexeme_Range) return Boolean
-   is (Lexeme.Lower in Range_Index and then Lexeme.Upper <= Self.Length + 1);
+   is (Lexeme.Upper <= Self.Length + 1);
 
    procedure Take_Lexeme (Self : in out Scanner; Output : out Lexeme_Range)
    with
@@ -226,5 +238,9 @@ private
                  then
                    (for all X in Output.Lower .. Output.Upper - 1
                     => not ACH.Is_Space (Self.Input (X))));
+
+   function Is_Word (Self : Scanner; Tk : Token) return Boolean
+   is ((for all X in Tk.Lexeme.Lower .. Tk.Lexeme.Upper - 1
+        => not ACH.Is_Space (Self.Input (X))));
 
 end Scanners;
