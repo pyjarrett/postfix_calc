@@ -13,6 +13,11 @@ is
       Self.State := (if Self.Length = 0 then Empty else Ready);
    end Load_Input;
 
+   procedure Ignore_Lexeme (Self : in out Scanner) is
+   begin
+      Self.Start := Self.Cursor;
+   end Ignore_Lexeme;
+
    procedure Take_Lexeme (Self : in out Scanner; Output : out Lexeme) is
    begin
       Output.Lower := Self.Start;
@@ -64,8 +69,7 @@ is
            Loop_Invariant
              (Has_Next (Self)
                 and then Remaining_Characters (Self) > 0
-                and then Has_Valid_Cursor (Self)
-                and then Has_Valid_State (Self)
+                and then Is_Valid (Self)
                 and then ((not Skipped_Whitespace
                            and then Remaining_Characters (Self)
                                     = Remaining_Characters (Self'Loop_Entry))
@@ -85,6 +89,8 @@ is
       if Skipped_Whitespace then
          Self.Start := Self.Cursor;
       end if;
+
+      Ignore_Lexeme (Self);
 
       Self.State := (if Has_Next (Self) then Ready else Complete);
    end Skip_Whitespace;

@@ -2,7 +2,7 @@ with Ada.Characters.Latin_1;
 with Ada.Characters.Handling;
 
 package Scanners
-  with SPARK_Mode => On
+  with SPARK_Mode => On, Pure
 is
    package ACH renames Ada.Characters.Handling;
 
@@ -23,14 +23,26 @@ is
 
    No_More_Characters : constant Character := Ada.Characters.Latin_1.NUL;
 
-   function Has_Input (Self : Scanner) return Boolean;
+   function Has_Input (Self : Scanner) return Boolean
+   with Global => null;
 
-   function Has_More_Characters (Self : Scanner) return Boolean;
+   function Has_More_Characters (Self : Scanner) return Boolean
+   with Global => null;
+
+   procedure Ignore_Lexeme (Self : in out Scanner)
+   with
+     Global => null,
+     Post   =>
+       Lexeme_Size (Self) = 0
+       and then Remaining_Characters (Self) = Remaining_Characters (Self'Old)
+       and then Has_Next (Self) = Has_Next (Self'Old)
+       and then Peek (Self) = Peek (Self'Old);
 
    function Lexeme_Size (Self : Scanner) return Range_Size
-   with Post => Lexeme_Size'Result <= Input_Size (Self);
+   with Global => null, Post => Lexeme_Size'Result <= Input_Size (Self);
 
-   function Remaining_Characters (Self : Scanner) return Range_Size;
+   function Remaining_Characters (Self : Scanner) return Range_Size
+   with Global => null;
 
    function Input_Size (Self : Scanner) return Range_Size;
 
@@ -104,6 +116,8 @@ private
 
    type Scanner_State is (Empty, Ready, Complete);
 
+   function Is_Valid (Self : Scanner) return Boolean;
+
    type Scanner is record
       Input  : String (1 .. Max_Input_Length);
       Start  : Range_Lower := 1;
@@ -111,9 +125,7 @@ private
       Length : Range_Size := 0;
       State  : Scanner_State := Empty;
    end record
-   with
-     Invariant =>
-       Has_Valid_Cursor (Scanner) and then Has_Valid_State (Scanner);
+   with Invariant => Is_Valid (Scanner);
 
    function Has_Valid_Cursor (Self : Scanner) return Boolean
    is (Self.Start <= Self.Cursor and then Self.Cursor <= Self.Length + 1);
@@ -178,6 +190,7 @@ private
        and then (if not Skipped_Whitespace
                  then
                    Remaining_Characters (Self)
-                   = Remaining_Characters (Self'Old));
+                   = Remaining_Characters (Self'Old))
+       and then (Lexeme_Size (Self) = 0);
 
 end Scanners;
