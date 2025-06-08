@@ -26,7 +26,16 @@ is
       Self.Start := Self.Cursor;
    end Take_Lexeme;
 
-   procedure Next (Self : in out Scanner) is
+   procedure Next (Self : in out Scanner)
+   with
+     Refined_Post =>
+       Lexeme_Size (Self) = Lexeme_Size (Self'Old) + 1
+       and then Remaining_Characters (Self) < Remaining_Characters (Self'Old)
+       and then (for all X in Self.Input'Range
+                 => Self.Input (X) = Self.Input'Old (X))
+       and then Self.Start = Self.Start'Old
+       and then Is_Valid (Self)
+   is
    begin
       if Has_Next (Self) then
          Self.Cursor := Self.Cursor + 1;
@@ -51,13 +60,27 @@ is
 
       pragma Assert (not ACH.Is_Space (Peek (Self)));
       pragma Assert (Has_Next (Self));
+      pragma Assert (Self.Start = Self.Cursor);
+      pragma
+        Assert
+          (for all X in Self.Start .. Self.Cursor
+           => not ACH.Is_Space (Self.Input (X)));
       while Has_Next (Self) and then not ACH.Is_Space (Peek (Self)) loop
          pragma
            Loop_Invariant
              (Is_Valid (Self)
                 and then Remaining_Characters (Self)
-                         <= Remaining_Characters (Self'Loop_Entry));
-         pragma Loop_Variant (Decreases => Remaining_Characters (Self));
+                         <= Remaining_Characters (Self'Loop_Entry)
+                and then (not ACH.Is_Space (Self.Input (Self.Cursor)))
+                and then (for all X in Self.Input'Range
+                          => Self.Input (X) = Self.Input'Loop_Entry (X))
+                and then Self.Start = Self.Start'Loop_Entry
+                and then (for all X in Self.Start'Loop_Entry .. Self.Cursor
+                          => not ACH.Is_Space (Self.Input (X))));
+         pragma
+           Loop_Variant
+             (Decreases => Remaining_Characters (Self),
+              Increases => Self.Cursor);
          Next (Self);
       end loop;
 
