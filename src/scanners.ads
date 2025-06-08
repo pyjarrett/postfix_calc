@@ -14,8 +14,8 @@ is
    subtype Range_Size is Small_Int range 0 .. Max_Input_Length;
 
    -- Lexeme --
-   type Lexeme is private;
-   function Width (Self : Lexeme) return Range_Size;
+   type Lexeme_Range is private;
+   function Width (Self : Lexeme_Range) return Range_Size;
 
    -- Scanner --
 
@@ -55,10 +55,14 @@ is
        and then Has_More_Characters (Self)
        and then Input_Size (Self) = Input'Length;
 
-   procedure Take_Lexeme (Self : in out Scanner; Output : out Lexeme)
+   procedure Take_Lexeme (Self : in out Scanner; Output : out Lexeme_Range)
    with
      Post =>
-       Lexeme_Size (Self) = 0 and then Width (Output) = Lexeme_Size (Self'Old);
+       Lexeme_Size (Self) = 0
+       and then Width (Output) = Lexeme_Size (Self'Old)
+       and then Remaining_Characters (Self) = Remaining_Characters (Self'Old)
+       and then Has_Next (Self) = Has_Next (Self'Old)
+       and then Peek (Self) = Peek (Self'Old);
 
    function Has_Next (Self : Scanner) return Boolean
    with
@@ -73,43 +77,42 @@ is
 
    procedure Next (Self : in out Scanner)
    with
-     Global         => null,
-     Contract_Cases =>
-       (Has_Next (Self)     =>
-          Lexeme_Size (Self) = Lexeme_Size (Self'Old) + 1
-          and then Remaining_Characters (Self)
-                   < Remaining_Characters (Self'Old),
-        not Has_Next (Self) =>
-          Lexeme_Size (Self) = Lexeme_Size (Self'Old)
-          and then Remaining_Characters (Self)
-                   = Remaining_Characters ((Self'Old)));
+     Global => null,
+     Pre    => Has_Next (Self),
+     Post   =>
+       Lexeme_Size (Self) = Lexeme_Size (Self'Old) + 1
+       and then Remaining_Characters (Self) < Remaining_Characters (Self'Old);
 
    -- Tokens --
 
    type Token_Kind is (Op, End_Of_Input);
 
    type Token is record
-      Kind : Token_Kind;
+      Kind   : Token_Kind;
+      Lexeme : Lexeme_Range;
    end record;
 
    procedure Next_Token (Self : in out Scanner; Tk : out Token)
    with
      Global => null,
      Pre    => Has_Next (Self) and then Has_More_Characters (Self),
-     Post   => Remaining_Characters (Self) < Remaining_Characters (Self'Old),
+     Post   =>
+       (Remaining_Characters (Self) < Remaining_Characters (Self'Old))
+       and then (Tk.Kind = End_Of_Input
+                 or else (Tk.Kind = Op and Width (Tk.Lexeme) > 0)),
      Always_Terminates;
 
 private
 
    -- Lexeme --
 
-   type Lexeme is record
+   type Lexeme_Range is record
       Lower : Range_Lower := 1;
       Upper : Range_Upper := 1;
    end record
    with Invariant => Lower <= Upper and then Upper - Lower <= Range_Size'Last;
 
-   function Width (Self : Lexeme) return Range_Size
+   function Width (Self : Lexeme_Range) return Range_Size
    is (Self.Upper - Self.Lower);
 
    -- Scanner --

@@ -1,5 +1,3 @@
-with Scanners;
-
 package body Scanners
   with SPARK_Mode => On
 is
@@ -18,7 +16,7 @@ is
       Self.Start := Self.Cursor;
    end Ignore_Lexeme;
 
-   procedure Take_Lexeme (Self : in out Scanner; Output : out Lexeme) is
+   procedure Take_Lexeme (Self : in out Scanner; Output : out Lexeme_Range) is
    begin
       Output.Lower := Self.Start;
       Output.Upper := Self.Cursor;
@@ -38,15 +36,13 @@ is
 
    procedure Next_Token (Self : in out Scanner; Tk : out Token) is
    begin
-      Tk := (Kind => Scanners.End_Of_Input);
+      Tk := (Kind => End_Of_Input, Lexeme => (Lower => 1, Upper => 1));
 
       declare
          Skipped_Whitespace : Boolean;
-         Old                : Range_Size := Remaining_Characters (Self);
       begin
          Skip_Whitespace (Self, Skipped_Whitespace);
          if not Has_Next (Self) then
-            pragma Assert (Remaining_Characters (Self) < Old);
             pragma Assert (Skipped_Whitespace);
             pragma Assert (not ACH.Is_Space (Peek (Self)));
             return;
@@ -55,9 +51,19 @@ is
 
       pragma Assert (not ACH.Is_Space (Peek (Self)));
       pragma Assert (Has_Next (Self));
+      while Has_Next (Self) and then not ACH.Is_Space (Peek (Self)) loop
+         pragma
+           Loop_Invariant
+             (Is_Valid (Self)
+                and then Remaining_Characters (Self)
+                         <= Remaining_Characters (Self'Loop_Entry));
+         pragma Loop_Variant (Decreases => Remaining_Characters (Self));
+         Next (Self);
+      end loop;
 
-      Next (Self);
       Self.State := (if Has_Next (Self) then Ready else Complete);
+      Tk.Kind := Op;
+      Take_Lexeme (Self, Tk.Lexeme);
    end Next_Token;
 
    procedure Skip_Whitespace
