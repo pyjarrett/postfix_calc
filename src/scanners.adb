@@ -137,29 +137,39 @@ is
 
    function Image (Tk : Token; S : Scanner) return String is
    begin
-      return S.Input (Tk.Lexeme.Lower .. Tk.Lexeme.Upper - 1);
+      return
+        (if Tk.Lexeme.Lower = Tk.Lexeme.Upper
+         then ""
+         else S.Input (Tk.Lexeme.Lower .. Tk.Lexeme.Upper - 1));
    end Image;
 
-   procedure Tokenize
-     (Self       : in out Scanner;
-      Tokens     : in out Token_Array;
-      Num_Tokens : out Natural)
-   is
-      Next_Token_Index : Positive := Tokens'First;
+   function Tokenize (Self : in out Scanner) return Token_Array is
+      Tokens     : Token_Array (1 .. 1024) := [others => <>];
+      Next_Index : Positive := Tokens'First;
+      Num_Tokens : Natural := 0;
    begin
-      while Has_More_Characters (Self) loop
+      pragma Assert (Tokens'Length <= Positive'Last - 1);
+      while Has_Next (Self) and then Next_Index <= Tokens'Last loop
          pragma
            Loop_Invariant
              (Is_Valid (Self)
                 and then Remaining_Characters (Self)
-                         <= Remaining_Characters (Self'Loop_Entry));
-         pragma
-           Loop_Variant
-             (Decreases => Remaining_Characters (Self),
-              Increases => Next_Token_Index);
-         Next (Self);
+                         <= Remaining_Characters (Self'Loop_Entry)
+                and then Next_Index >= Tokens'First
+                and then Next_Index <= Tokens'Last
+                and then Num_Tokens <= Tokens'Length
+                and then Num_Tokens <= Positive'Last - 1
+                and then (for all X in 1 .. Next_Index - 1
+                          => Tokens (X).Lexeme.Lower <= Tokens (X).Lexeme.Upper
+                             and then Tokens (X).Lexeme.Upper
+                                      - Tokens (X).Lexeme.Lower
+                                      <= Range_Size'Last));
+         pragma Loop_Variant (Decreases => Remaining_Characters (Self));
+         Next_Token (Self, Tokens (Next_Index));
+         Next_Index := Next_Index + 1;
       end loop;
-      Num_Tokens := Next_Token_Index - 1;
+      Num_Tokens := Next_Index - 1;
+      pragma Assert (Is_Valid (Self));
+      return Tokens (1 .. Num_Tokens);
    end Tokenize;
-
 end Scanners;

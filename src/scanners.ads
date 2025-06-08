@@ -106,18 +106,26 @@ is
 
    function Image (Tk : Token; S : Scanner) return String
    with
-     Pre  => Contains (S, Tk) and then Width (Tk.Lexeme) > 0,
+     Pre  => Width (Tk.Lexeme) = 0 or else Contains (S, Tk),
      Post => (if Tk.Kind = Word then Image'Result'Length > 0);
 
    function Contains (Self : Scanner; Tk : Token) return Boolean;
    function Contains (Self : Scanner; Lexeme : Lexeme_Range) return Boolean;
    function Is_Word (Self : Scanner; Tk : Token) return Boolean;
 
-   procedure Tokenize
-     (Self       : in out Scanner;
-      Tokens     : in out Token_Array;
-      Num_Tokens : out Natural)
-   with Global => null, Always_Terminates, Pre => Tokens'Length > 0;
+   function Tokenize (Self : in out Scanner) return Token_Array
+   with
+     Global => null,
+     Always_Terminates,
+     Side_Effects,
+     Pre    =>
+       --   Tokens'Length > 0
+       --   and then Tokens'Length < Natural'Last - 1
+       --   and then Tokens'Last < Natural'Last - 1
+       Has_More_Characters (Self),
+     Post   =>
+       (if Has_Next (Self'Old)
+        then Remaining_Characters (Self) < Remaining_Characters (Self'Old));
 
 private
 

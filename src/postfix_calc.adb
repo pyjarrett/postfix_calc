@@ -19,13 +19,14 @@ begin
          exit when Input = "exit" or else Input = "quit";
          Scanners.Load_Input (S, Input);
 
-         while Scanners.Remaining_Characters (S) > 0 loop
+         while Scanners.Has_More_Characters (S) loop
             declare
-               Tk : Scanners.Token;
+               Tokens : constant Scanners.Token_Array := Scanners.Tokenize (S);
             begin
-               Scanners.Next_Token (S, Tk);
-               Ada.Text_IO.Put_Line (Tk'Image);
-               Ada.Text_IO.Put_Line (Scanners.Image (Tk, S));
+               for Tk of Tokens loop
+                  Ada.Text_IO.Put_Line (Tk'Image);
+                  Ada.Text_IO.Put_Line (Scanners.Image (Tk, S));
+               end loop;
             end;
          end loop;
       end;
