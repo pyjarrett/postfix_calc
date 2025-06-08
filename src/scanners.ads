@@ -55,7 +55,10 @@ is
      Depends        => (Self => +Input),
      Pre            => Input'Length <= Max_Input_Length,
      Contract_Cases =>
-       (Input'Length = 0 => true,
+       (Input'Length = 0 =>
+          Remaining_Characters (Self) = 0
+          and then not Has_More_Characters (Self)
+          and then Input_Size (Self) = 0,
         others           =>
           Remaining_Characters (Self) = Input'Length
           and then Has_More_Characters (Self)
