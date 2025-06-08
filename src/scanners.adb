@@ -124,4 +124,9 @@ is
       Self.State := (if Has_Next (Self) then Ready else Complete);
    end Skip_Whitespace;
 
+   function Image (Tk : Token; S : Scanner) return String is
+   begin
+      return S.Input (Tk.Lexeme.Lower .. Tk.Lexeme.Upper);
+   end Image;
+
 end Scanners;

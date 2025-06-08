@@ -25,6 +25,7 @@ begin
             begin
                Scanners.Next_Token (S, Tk);
                Ada.Text_IO.Put_Line (Tk'Image);
+               Ada.Text_IO.Put_Line (Scanners.Image (Tk, S));
             end;
          end loop;
       end;

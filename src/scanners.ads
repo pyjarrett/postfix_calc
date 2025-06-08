@@ -48,12 +48,15 @@ is
 
    procedure Load_Input (Self : in out Scanner; Input : String)
    with
-     Depends => (Self => +Input),
-     Pre     => 0 < Input'Length and then Input'Length <= Max_Input_Length,
-     Post    =>
-       Remaining_Characters (Self) = Input'Length
-       and then Has_More_Characters (Self)
-       and then Input_Size (Self) = Input'Length;
+     Global         => null,
+     Depends        => (Self => +Input),
+     Pre            => Input'Length <= Max_Input_Length,
+     Contract_Cases =>
+       (Input'Length = 0 => true,
+        others           =>
+          Remaining_Characters (Self) = Input'Length
+          and then Has_More_Characters (Self)
+          and then Input_Size (Self) = Input'Length);
 
    procedure Take_Lexeme (Self : in out Scanner; Output : out Lexeme_Range)
    with
@@ -101,6 +104,13 @@ is
        and then (Tk.Kind = End_Of_Input
                  or else (Tk.Kind = Op and Width (Tk.Lexeme) > 0)),
      Always_Terminates;
+
+   function Image (Tk : Token; S : Scanner) return String
+   with
+     Pre  => Contains (S, Tk),
+     Post => (if Tk.Kind = Op then Image'Result'Length > 0);
+
+   function Contains (Self : Scanner; Tk : Token) return Boolean;
 
 private
 
@@ -195,5 +205,10 @@ private
                    Remaining_Characters (Self)
                    = Remaining_Characters (Self'Old))
        and then (Lexeme_Size (Self) = 0);
+
+   function Contains (Self : Scanner; Tk : Token) return Boolean
+   is (Tk.Lexeme.Lower in Range_Index
+       and then Tk.Lexeme.Upper in Range_Index
+       and then Tk.Lexeme.Upper <= Self.Length + 1);
 
 end Scanners;
