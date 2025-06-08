@@ -104,10 +104,7 @@ is
                           and then Is_Word (Self, Tk))),
      Always_Terminates;
 
-   function Image (Tk : Token; S : Scanner) return String
-   with
-     Pre  => Width (Tk.Lexeme) = 0 or else Contains (S, Tk),
-     Post => (if Tk.Kind = Word then Image'Result'Length > 0);
+   function Image (Tk : Token; S : Scanner) return String;
 
    function Contains (Self : Scanner; Tk : Token) return Boolean;
    function Contains (Self : Scanner; Lexeme : Lexeme_Range) return Boolean;
