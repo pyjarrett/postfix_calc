@@ -2,7 +2,7 @@ with Ada.Characters.Latin_1;
 with Ada.Characters.Handling;
 
 package Scanners
-  with SPARK_Mode => On, Pure
+  with SPARK_Mode => On, Pure, Always_Terminates
 is
    package ACH renames Ada.Characters.Handling;
 
@@ -101,8 +101,7 @@ is
        and then (Tk.Kind = End_Of_Input
                  or else (Tk.Kind = Word
                           and then Width (Tk.Lexeme) > 0
-                          and then Is_Word (Self, Tk))),
-     Always_Terminates;
+                          and then Is_Word (Self, Tk)));
 
    function Image (Tk : Token; S : Scanner) return String;
 
@@ -113,13 +112,8 @@ is
    function Tokenize (Self : in out Scanner) return Token_Array
    with
      Global => null,
-     Always_Terminates,
      Side_Effects,
-     Pre    =>
-       --   Tokens'Length > 0
-       --   and then Tokens'Length < Natural'Last - 1
-       --   and then Tokens'Last < Natural'Last - 1
-       Has_More_Characters (Self),
+     Pre    => Has_More_Characters (Self),
      Post   =>
        (if Has_Next (Self'Old)
         then Remaining_Characters (Self) < Remaining_Characters (Self'Old));

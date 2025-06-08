@@ -1,7 +1,7 @@
 with Interfaces;
 
 package Machines
-  with SPARK_Mode => On
+  with SPARK_Mode => On, Always_Terminates
 is
    type Machine_Status is
      (Ok, Stack_Overflow, Stack_Underflow, Value_Out_Of_Bounds);
