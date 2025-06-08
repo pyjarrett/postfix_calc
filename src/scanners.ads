@@ -29,6 +29,9 @@ is
    function Has_More_Characters (Self : Scanner) return Boolean
    with Global => null;
 
+   function Has_Lexeme (Self : Scanner) return Boolean
+   with Global => null;
+
    procedure Ignore_Lexeme (Self : in out Scanner)
    with
      Global => null,
@@ -58,15 +61,6 @@ is
           and then Has_More_Characters (Self)
           and then Input_Size (Self) = Input'Length);
 
-   procedure Take_Lexeme (Self : in out Scanner; Output : out Lexeme_Range)
-   with
-     Post =>
-       Lexeme_Size (Self) = 0
-       and then Width (Output) = Lexeme_Size (Self'Old)
-       and then Remaining_Characters (Self) = Remaining_Characters (Self'Old)
-       and then Has_Next (Self) = Has_Next (Self'Old)
-       and then Peek (Self) = Peek (Self'Old);
-
    function Has_Next (Self : Scanner) return Boolean
    with
      Global => null,
@@ -88,7 +82,7 @@ is
 
    -- Tokens --
 
-   type Token_Kind is (Op, End_Of_Input);
+   type Token_Kind is (Word, End_Of_Input);
 
    type Token is record
       Kind   : Token_Kind;
@@ -102,22 +96,23 @@ is
      Post   =>
        (Remaining_Characters (Self) < Remaining_Characters (Self'Old))
        and then (Tk.Kind = End_Of_Input
-                 or else (Tk.Kind = Op and Width (Tk.Lexeme) > 0)),
+                 or else (Tk.Kind = Word and then Width (Tk.Lexeme) > 0)),
      Always_Terminates;
 
    function Image (Tk : Token; S : Scanner) return String
    with
-     Pre  => Contains (S, Tk),
-     Post => (if Tk.Kind = Op then Image'Result'Length > 0);
+     Pre  => Contains (S, Tk) and then Width (Tk.Lexeme) > 0,
+     Post => (if Tk.Kind = Word then Image'Result'Length > 0);
 
    function Contains (Self : Scanner; Tk : Token) return Boolean;
+   function Contains (Self : Scanner; Lexeme : Lexeme_Range) return Boolean;
 
 private
 
    -- Lexeme --
 
    type Lexeme_Range is record
-      Lower : Range_Lower := 1;
+      Lower : Range_Index := 1;
       Upper : Range_Upper := 1;
    end record
    with Invariant => Lower <= Upper and then Upper - Lower <= Range_Size'Last;
@@ -156,6 +151,9 @@ private
 
    function Has_More_Characters (Self : Scanner) return Boolean
    is (Self.Cursor <= Self.Length);
+
+   function Has_Lexeme (Self : Scanner) return Boolean
+   is (Self.Start <= Self.Length and then Self.Start < Self.Cursor);
 
    function Lexeme_Size (Self : Scanner) return Range_Size
    is (Self.Cursor - Self.Start);
@@ -207,8 +205,26 @@ private
        and then (Lexeme_Size (Self) = 0);
 
    function Contains (Self : Scanner; Tk : Token) return Boolean
-   is (Tk.Lexeme.Lower in Range_Index
-       and then Tk.Lexeme.Upper in Range_Index
-       and then Tk.Lexeme.Upper <= Self.Length + 1);
+   is (Contains (Self, Tk.Lexeme));
+
+   function Contains (Self : Scanner; Lexeme : Lexeme_Range) return Boolean
+   is (Lexeme.Lower in Range_Index and then Lexeme.Upper <= Self.Length + 1);
+
+   procedure Take_Lexeme (Self : in out Scanner; Output : out Lexeme_Range)
+   with
+     Pre  => Is_Valid (Self) and then Has_Lexeme (Self),
+     Post =>
+       Is_Valid (Self)
+       and then Lexeme_Size (Self) = 0
+       and then Width (Output) = Lexeme_Size (Self'Old)
+       and then Remaining_Characters (Self) = Remaining_Characters (Self'Old)
+       and then Has_Next (Self) = Has_Next (Self'Old)
+       and then Peek (Self) = Peek (Self'Old)
+       and then Contains (Self, Output)
+       and then (if (for all X in Self.Start'Old .. Self.Cursor'Old - 1
+                     => not ACH.Is_Space (Self.Input'Old (X)))
+                 then
+                   (for all X in Output.Lower .. Output.Upper - 1
+                    => not ACH.Is_Space (Self.Input (X))));
 
 end Scanners;

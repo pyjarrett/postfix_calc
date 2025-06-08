@@ -22,6 +22,7 @@ is
       Output.Upper := Self.Cursor;
 
       pragma Assert (Width (Output) = (Self.Cursor - Self.Start));
+      pragma Assert (Contains (Self, Output));
 
       Self.Start := Self.Cursor;
    end Take_Lexeme;
@@ -53,7 +54,6 @@ is
          Skip_Whitespace (Self, Skipped_Whitespace);
          if not Has_Next (Self) then
             pragma Assert (Skipped_Whitespace);
-            pragma Assert (not ACH.Is_Space (Peek (Self)));
             return;
          end if;
       end;
@@ -75,18 +75,29 @@ is
                 and then (for all X in Self.Input'Range
                           => Self.Input (X) = Self.Input'Loop_Entry (X))
                 and then Self.Start = Self.Start'Loop_Entry
+                and then Self.Cursor in Self.Input'Range
                 and then (for all X in Self.Start'Loop_Entry .. Self.Cursor
                           => not ACH.Is_Space (Self.Input (X))));
-         pragma
-           Loop_Variant
-             (Decreases => Remaining_Characters (Self),
-              Increases => Self.Cursor);
+         pragma Loop_Variant (Decreases => Remaining_Characters (Self));
          Next (Self);
       end loop;
 
+      pragma Assert (Self.Start in Self.Input'Range);
+      pragma Assert (Self.Cursor <= Self.Input'Last + 1);
+      pragma
+        Assert
+          ((for all X in Self.Start .. Self.Cursor - 1
+            => not ACH.Is_Space (Self.Input (X))));
+
       Self.State := (if Has_Next (Self) then Ready else Complete);
-      Tk.Kind := Op;
+      Tk.Kind := Word;
       Take_Lexeme (Self, Tk.Lexeme);
+
+      pragma Assert (Contains (Self, Tk));
+      pragma
+        Assert
+          ((for all X in Tk.Lexeme.Lower .. Tk.Lexeme.Upper - 1
+            => not ACH.Is_Space (Self.Input (X))));
    end Next_Token;
 
    procedure Skip_Whitespace
@@ -126,7 +137,7 @@ is
 
    function Image (Tk : Token; S : Scanner) return String is
    begin
-      return S.Input (Tk.Lexeme.Lower .. Tk.Lexeme.Upper);
+      return S.Input (Tk.Lexeme.Lower .. Tk.Lexeme.Upper - 1);
    end Image;
 
 end Scanners;
