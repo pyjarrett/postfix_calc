@@ -72,6 +72,7 @@ is
           Is_Running (Self)
           and then not Is_Stack_Empty (Self)
           and then Self.Top = Self'Old.Top + 1
+          and then Stack_Size (Self) = Stack_Size (Self'Old) + 1
           and then Peek (Self) = Element);
 
    procedure Pop (Self : in out Machine; Element : in out Value)
@@ -83,25 +84,25 @@ is
         others                =>
           Is_Running (Self)
           and then Stack_Size (Self) = Stack_Size (Self'Old) - 1
-          and then Peek (Self'Old) = Element),
-     Post           =>
-       Status (Self) = Stack_Underflow
-       or else (Is_Running (Self)
-                and then Stack_Size (Self) = Stack_Size (Self'Old) - 1
-                and then Peek (Self'Old) = Element);
+          and then Peek (Self'Old) = Element);
 
    procedure Execute (Self : in out Machine; Op : Machine_Op)
    with
-     Pre            => Is_Running (Self),
      Contract_Cases =>
-       (Is_Stopped (Self) => Is_Stopped (Self), others => true);
+       (Is_Stopped (Self) and then Op /= Reset =>
+          Is_Stopped (Self) and then Stack_Size (Self) = Stack_Size (Self'Old),
+        Is_Stopped (Self) and then Op = Reset  =>
+          Is_Running (Self) and then Stack_Size (Self) = Stack_Size (Self'Old),
+        others                                 => true);
 
    procedure Op_Add (Self : in out Machine)
    with
      Global         => null,
      Pre            => Is_Running (Self),
      Contract_Cases =>
-       (Stack_Size (Self) < 2 => Status (Self) = Stack_Underflow,
+       (Stack_Size (Self) < 2 =>
+          Status (Self) = Stack_Underflow
+          and then Stack_Size (Self) = Stack_Size (Self'Old),
         others                =>
           ((Stack_Size (Self) = Stack_Size (Self'Old) - 1)
            or else (Self.Status = Value_Out_Of_Bounds)));
@@ -111,7 +112,9 @@ is
      Global         => null,
      Pre            => Is_Running (Self),
      Contract_Cases =>
-       (Stack_Size (Self) < 2 => Status (Self) = Stack_Underflow,
+       (Stack_Size (Self) < 2 =>
+          Status (Self) = Stack_Underflow
+          and then Stack_Size (Self) = Stack_Size (Self'Old),
         others                =>
           ((Stack_Size (Self) = Stack_Size (Self'Old) - 1)
            or else (Self.Status = Value_Out_Of_Bounds)));

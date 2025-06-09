@@ -35,6 +35,13 @@ is
 
    procedure Execute (Self : in out Machine; Op : Machine_Op) is
    begin
+      if Is_Stopped (Self) then
+         if Op = Reset then
+            Self.Status := Ok;
+         end if;
+         return;
+      end if;
+
       case Op is
          when Add =>
             Op_Add (Self);
@@ -75,18 +82,15 @@ is
          return;
       end if;
 
-      pragma Assert (Is_Running (Self));
       Pop (Self, Left);
-      pragma Assert (Stack_Size (Self) >= 1);
       Pop (Self, Right);
-      pragma Assert (Stack_Size (Self) + 2 <= Max_Stack_Size);
-      pragma Assert (Is_Running (Self));
       if Left not in Bounded_Value or else Right not in Bounded_Value then
+         Push (Self, Right);
+         Push (Self, Left);
          Self.Status := Value_Out_Of_Bounds;
          return;
       end if;
       Push (Self, Left + Right);
-      pragma Assert (Is_Running (Self));
    end Op_Add;
 
    procedure Op_Subtract (Self : in out Machine) is
@@ -101,11 +105,12 @@ is
       Pop (Self, Left);
       Pop (Self, Right);
       if Left not in Bounded_Value or else Right not in Bounded_Value then
+         Push (Self, Right);
+         Push (Self, Left);
          Self.Status := Value_Out_Of_Bounds;
          return;
       end if;
       Push (Self, Left + Right);
-      pragma Assert (Is_Running (Self));
    end Op_Subtract;
 
    function To_Machine_Op (Input : String) return Machine_Op is
