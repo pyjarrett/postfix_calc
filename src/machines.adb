@@ -58,8 +58,8 @@ is
             --  when Dupe =>
             --     null;
 
-            --  when Print =>
-            --     null;
+         when Print =>
+            Op_Print (Self);
 
          when Dump_Stack =>
             Ada.Text_IO.Put_Line ("Status: " & Self.Status'Image);
@@ -112,6 +112,18 @@ is
       end if;
       Push (Self, Left + Right);
    end Op_Subtract;
+
+   procedure Op_Print (Self : in out Machine) is
+      Element : Value := 0.0;
+   begin
+      if Is_Stack_Empty (Self) then
+         Self.Status := Stack_Underflow;
+         return;
+      end if;
+
+      Pop (Self, Element);
+      Ada.Text_IO.Put_Line (Element'Image);
+   end Op_Print;
 
    function To_Machine_Op (Input : String) return Machine_Op is
    begin

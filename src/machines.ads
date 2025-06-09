@@ -119,6 +119,17 @@ is
           ((Stack_Size (Self) = Stack_Size (Self'Old) - 1)
            or else (Self.Status = Value_Out_Of_Bounds)));
 
+   procedure Op_Print (Self : in out Machine)
+   with
+     Pre            => Is_Running (Self),
+     Contract_Cases =>
+       (Is_Stack_Empty (Self) =>
+          Status (Self) = Stack_Underflow
+          and then Stack_Size (Self) = Stack_Size (Self'Old),
+        others                =>
+          (Is_Running (Self)
+           and then Stack_Size (Self) = Stack_Size (Self'Old) - 1));
+
    function To_Machine_Op (Input : String) return Machine_Op
    with Global => null;
 end Machines;
