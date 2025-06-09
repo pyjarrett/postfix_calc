@@ -12,6 +12,7 @@ is
    Min_Value : constant := -1.0e5;
    Max_Sum   : constant := 2 * Max_Value;
    subtype Bounded_Value is Value range Min_Value .. Max_Value;
+   subtype Prohibited_Divisor is Value range -1.0e-4 .. 1.0e-4;
 
    -- Stack definitions
    Max_Stack_Size : constant := 1024;
@@ -108,6 +109,30 @@ is
            or else (Self.Status = Value_Out_Of_Bounds)));
 
    procedure Op_Subtract (Self : in out Machine)
+   with
+     Global         => null,
+     Pre            => Is_Running (Self),
+     Contract_Cases =>
+       (Stack_Size (Self) < 2 =>
+          Status (Self) = Stack_Underflow
+          and then Stack_Size (Self) = Stack_Size (Self'Old),
+        others                =>
+          ((Stack_Size (Self) = Stack_Size (Self'Old) - 1)
+           or else (Self.Status = Value_Out_Of_Bounds)));
+
+   procedure Op_Multiply (Self : in out Machine)
+   with
+     Global         => null,
+     Pre            => Is_Running (Self),
+     Contract_Cases =>
+       (Stack_Size (Self) < 2 =>
+          Status (Self) = Stack_Underflow
+          and then Stack_Size (Self) = Stack_Size (Self'Old),
+        others                =>
+          ((Stack_Size (Self) = Stack_Size (Self'Old) - 1)
+           or else (Self.Status = Value_Out_Of_Bounds)));
+
+   procedure Op_Divide (Self : in out Machine)
    with
      Global         => null,
      Pre            => Is_Running (Self),

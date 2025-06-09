@@ -54,11 +54,11 @@ is
          when Subtract =>
             Op_Subtract (Self);
 
-            --  when Multiply =>
-            --     null;
+         when Multiply =>
+            Op_Multiply (Self);
 
-            --  when Divide =>
-            --     null;
+         when Divide =>
+            Op_Divide (Self);
 
          when Dupe =>
             Op_Dupe (Self);
@@ -87,11 +87,11 @@ is
          return;
       end if;
 
-      Pop (Self, Left);
       Pop (Self, Right);
+      Pop (Self, Left);
       if Left not in Bounded_Value or else Right not in Bounded_Value then
-         Push (Self, Right);
          Push (Self, Left);
+         Push (Self, Right);
          Self.Status := Value_Out_Of_Bounds;
          return;
       end if;
@@ -107,16 +107,58 @@ is
          return;
       end if;
 
-      Pop (Self, Left);
       Pop (Self, Right);
+      Pop (Self, Left);
       if Left not in Bounded_Value or else Right not in Bounded_Value then
-         Push (Self, Right);
          Push (Self, Left);
+         Push (Self, Right);
          Self.Status := Value_Out_Of_Bounds;
          return;
       end if;
-      Push (Self, Left + Right);
+      Push (Self, Left - Right);
    end Op_Subtract;
+
+   procedure Op_Multiply (Self : in out Machine) is
+      Left  : Value := 0.0;
+      Right : Value := 0.0;
+   begin
+      if Stack_Size (Self) < 2 then
+         Self.Status := Stack_Underflow;
+         return;
+      end if;
+
+      Pop (Self, Right);
+      Pop (Self, Left);
+      if Left not in Bounded_Value or else Right not in Bounded_Value then
+         Push (Self, Left);
+         Push (Self, Right);
+         Self.Status := Value_Out_Of_Bounds;
+         return;
+      end if;
+      Push (Self, Left * Right);
+   end Op_Multiply;
+
+   procedure Op_Divide (Self : in out Machine) is
+      Left  : Value := 0.0;
+      Right : Value := 1.0;
+   begin
+      if Stack_Size (Self) < 2 then
+         Self.Status := Stack_Underflow;
+         return;
+      end if;
+
+      Pop (Self, Right);
+      Pop (Self, Left);
+
+      if Left in Bounded_Value and then Right not in Prohibited_Divisor then
+         Push (Self, Left / Right);
+      else
+         Push (Self, Left);
+         Push (Self, Right);
+         Self.Status := Value_Out_Of_Bounds;
+         return;
+      end if;
+   end Op_Divide;
 
    procedure Op_Dupe (Self : in out Machine) is
    begin
