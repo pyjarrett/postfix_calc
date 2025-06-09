@@ -20,31 +20,34 @@ begin
          while Scanners.Has_More_Characters (S) loop
             declare
                Tokens : constant Scanners.Token_Array := Scanners.Tokenize (S);
+               use type Scanners.Token_Kind;
             begin
                for Tk of Tokens loop
-                  declare
-                     Lexeme    : constant String := Scanners.Image (Tk, S);
-                     New_Value : Machines.Bounded_Value;
-                     Op        : Machines.Machine_Op := Machines.Error;
-                  begin
-                     if Scanners.Is_Number (Lexeme) then
-                        begin
-                           New_Value := Machines.Bounded_Value'Value (Lexeme);
-                           Machines.Push (M, New_Value);
-                           Ada.Text_IO.Put_Line
-                             ("Pushed value: " & New_Value'Image);
-                        exception
-                           when Constraint_Error =>
+                  if Tk.Kind = Scanners.Word then
+                     declare
+                        Lexeme    : constant String := Scanners.Image (Tk, S);
+                        New_Value : Machines.Bounded_Value;
+                        Op        : Machines.Machine_Op := Machines.Error;
+                     begin
+                        if Scanners.Is_Number (Lexeme) then
+                           begin
+                              New_Value :=
+                                Machines.Bounded_Value'Value (Lexeme);
+                              Machines.Push (M, New_Value);
                               Ada.Text_IO.Put_Line
-                                ("Error in value:" & Lexeme);
-                              null;
-                        end;
-                     else
-                        Op := Machines.To_Machine_Op (Lexeme);
-                        Machines.Execute (M, Op);
-                     end if;
-                  end;
-                  Ada.Text_IO.Put_Line (Tk'Image);
+                                ("Pushed value: " & New_Value'Image);
+                           exception
+                              when Constraint_Error =>
+                                 Ada.Text_IO.Put_Line
+                                   ("Error in value:" & Lexeme);
+                                 null;
+                           end;
+                        else
+                           Op := Machines.To_Machine_Op (Lexeme);
+                           Machines.Execute (M, Op);
+                        end if;
+                     end;
+                  end if;
                end loop;
             end;
          end loop;
