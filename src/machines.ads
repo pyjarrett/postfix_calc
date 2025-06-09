@@ -119,6 +119,20 @@ is
           ((Stack_Size (Self) = Stack_Size (Self'Old) - 1)
            or else (Self.Status = Value_Out_Of_Bounds)));
 
+   procedure Op_Dupe (Self : in out Machine)
+   with
+     Pre            => Is_Running (Self),
+     Contract_Cases =>
+       (Is_Stack_Full (Self)  =>
+          Status (Self) = Stack_Overflow
+          and then Stack_Size (Self) = Stack_Size (Self'Old),
+        Is_Stack_Empty (Self) =>
+          Status (Self) = Stack_Underflow
+          and then Stack_Size (Self) = Stack_Size (Self'Old),
+        others                =>
+          (Is_Running (Self)
+           and then Stack_Size (Self) = Stack_Size (Self'Old) + 1));
+
    procedure Op_Print (Self : in out Machine)
    with
      Pre            => Is_Running (Self),

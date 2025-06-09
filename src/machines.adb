@@ -38,6 +38,11 @@ is
       if Is_Stopped (Self) then
          if Op = Reset then
             Self.Status := Ok;
+         elsif Op = Dump_Stack then
+            Ada.Text_IO.Put_Line ("Status: " & Self.Status'Image);
+            for Index in reverse 1 .. Self.Top loop
+               Ada.Text_IO.Put_Line (Self.Stack (Index)'Image);
+            end loop;
          end if;
          return;
       end if;
@@ -55,8 +60,8 @@ is
             --  when Divide =>
             --     null;
 
-            --  when Dupe =>
-            --     null;
+         when Dupe =>
+            Op_Dupe (Self);
 
          when Print =>
             Op_Print (Self);
@@ -112,6 +117,21 @@ is
       end if;
       Push (Self, Left + Right);
    end Op_Subtract;
+
+   procedure Op_Dupe (Self : in out Machine) is
+   begin
+      if Is_Stack_Full (Self) then
+         Self.Status := Stack_Overflow;
+         return;
+      end if;
+
+      if Is_Stack_Empty (Self) then
+         Self.Status := Stack_Underflow;
+         return;
+      end if;
+
+      Push (Self, Peek (Self));
+   end Op_Dupe;
 
    procedure Op_Print (Self : in out Machine) is
       Element : Value := 0.0;
