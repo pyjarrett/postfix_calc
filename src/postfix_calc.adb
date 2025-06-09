@@ -23,7 +23,7 @@ begin
             begin
                for Tk of Tokens loop
                   declare
-                     Lexeme    : String := Scanners.Image (Tk, S);
+                     Lexeme    : constant String := Scanners.Image (Tk, S);
                      New_Value : Machines.Bounded_Value;
                   begin
                      if Scanners.Is_Number (Lexeme) then

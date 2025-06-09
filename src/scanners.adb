@@ -174,11 +174,15 @@ is
    end Tokenize;
 
    function Is_Number (Input : String) return Boolean is
-      Decimal_Count : Natural := 0;
+      Found_Decimal : Boolean := False;
    begin
+      if Input'Length = 0 then
+         return False;
+      end if;
+
       case Input (Input'First) is
          when '.' =>
-            Decimal_Count := Decimal_Count + 1;
+            Found_Decimal := True;
 
          when others =>
             null;
@@ -187,15 +191,19 @@ is
       for X of Input (Input'First + 1 .. Input'Last) loop
          case X is
             when '.' =>
-               Decimal_Count := Decimal_Count + 1;
+               if Found_Decimal then
+                  return False;
+               else
+                  Found_Decimal := True;
+               end if;
 
             when '0' .. '9' =>
                null;
 
             when others =>
-               return false;
+               return False;
          end case;
       end loop;
-      return Decimal_Count <= 1;
+      return True;
    end Is_Number;
 end Scanners;

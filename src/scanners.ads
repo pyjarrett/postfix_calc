@@ -122,7 +122,10 @@ is
         then Remaining_Characters (Self) < Remaining_Characters (Self'Old));
 
    function Is_Number (Input : String) return Boolean
-   with Pre => Input'Length < Natural'Last - 1;
+   with
+     Pre =>
+       Input'Length < Natural'Last - 1
+       and then Input'First <= Positive'Last - 1;
 
 private
 
