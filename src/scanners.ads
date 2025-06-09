@@ -121,6 +121,9 @@ is
        (if Has_Next (Self'Old)
         then Remaining_Characters (Self) < Remaining_Characters (Self'Old));
 
+   function Is_Number (Input : String) return Boolean
+   with Pre => Input'Length < Natural'Last - 1;
+
 private
 
    -- Lexeme --

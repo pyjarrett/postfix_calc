@@ -172,4 +172,30 @@ is
       pragma Assert (Is_Valid (Self));
       return Tokens (1 .. Num_Tokens);
    end Tokenize;
+
+   function Is_Number (Input : String) return Boolean is
+      Decimal_Count : Natural := 0;
+   begin
+      case Input (Input'First) is
+         when '.' =>
+            Decimal_Count := Decimal_Count + 1;
+
+         when others =>
+            null;
+      end case;
+
+      for X of Input (Input'First + 1 .. Input'Last) loop
+         case X is
+            when '.' =>
+               Decimal_Count := Decimal_Count + 1;
+
+            when '0' .. '9' =>
+               null;
+
+            when others =>
+               return false;
+         end case;
+      end loop;
+      return Decimal_Count <= 1;
+   end Is_Number;
 end Scanners;

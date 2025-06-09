@@ -7,8 +7,6 @@ procedure Postfix_Calc with SPARK_Mode => Off is
    M : Machines.Machine;
    S : Scanners.Scanner;
 begin
-   Machines.Push (M, 20.0);
-   Machines.Push (M, 30.0);
    Ada.Text_IO.Put_Line (Machines.Status (M)'Image);
 
    loop
@@ -24,8 +22,23 @@ begin
                Tokens : constant Scanners.Token_Array := Scanners.Tokenize (S);
             begin
                for Tk of Tokens loop
+                  declare
+                     Lexeme    : String := Scanners.Image (Tk, S);
+                     New_Value : Machines.Bounded_Value;
+                  begin
+                     if Scanners.Is_Number (Lexeme) then
+                        begin
+                           New_Value := Machines.Bounded_Value'Value (Lexeme);
+                           Machines.Push (M, New_Value);
+                           Ada.Text_IO.Put_Line
+                             ("Pushed value: " & New_Value'Image);
+                        exception
+                           when Constraint_Error =>
+                              null;
+                        end;
+                     end if;
+                  end;
                   Ada.Text_IO.Put_Line (Tk'Image);
-                  Ada.Text_IO.Put_Line (Scanners.Image (Tk, S));
                end loop;
             end;
          end loop;
