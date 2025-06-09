@@ -1,3 +1,5 @@
+with Ada.Text_IO;
+
 package body Machines
   with SPARK_Mode => On
 is
@@ -52,8 +54,14 @@ is
             --  when Print =>
             --     null;
 
+         when Dump_Stack =>
+            Ada.Text_IO.Put_Line ("Status: " & Self.Status'Image);
+            for Index in reverse 1 .. Self.Top loop
+               Ada.Text_IO.Put_Line (Self.Stack (Index)'Image);
+            end loop;
+
          when others =>
-            null;
+            Ada.Text_IO.Put_Line ("Ignored: " & Op'Image);
       end case;
    end Execute;
 
@@ -99,5 +107,28 @@ is
       Push (Self, Left + Right);
       pragma Assert (Is_Running (Self));
    end Op_Subtract;
+
+   function To_Machine_Op (Input : String) return Machine_Op is
+   begin
+      if Input = "+" then
+         return Add;
+      elsif Input = "-" then
+         return Subtract;
+      elsif Input = "*" then
+         return Multiply;
+      elsif Input = "/" then
+         return Divide;
+      elsif Input = "." then
+         return Print;
+      elsif Input = "dup" then
+         return Dupe;
+      elsif Input = "dump" then
+         return Dump_Stack;
+      elsif Input = "reset" then
+         return Reset;
+      else
+         return Error;
+      end if;
+   end To_Machine_Op;
 
 end Machines;

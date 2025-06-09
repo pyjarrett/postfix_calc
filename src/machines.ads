@@ -19,7 +19,8 @@ is
    subtype Stack_Index is Element_Count range 1 .. Max_Stack_Size;
    type Machine_Stack is array (Stack_Index) of Value;
 
-   type Machine_Op is (Add, Subtract, Multiply, Divide, Dupe, Print);
+   type Machine_Op is
+     (Add, Subtract, Multiply, Divide, Dupe, Print, Dump_Stack, Error, Reset);
 
    type Machine is record
       Status : Machine_Status := Ok;
@@ -114,4 +115,7 @@ is
         others                =>
           ((Stack_Size (Self) = Stack_Size (Self'Old) - 1)
            or else (Self.Status = Value_Out_Of_Bounds)));
+
+   function To_Machine_Op (Input : String) return Machine_Op
+   with Global => null;
 end Machines;

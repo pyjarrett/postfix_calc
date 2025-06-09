@@ -25,6 +25,7 @@ begin
                   declare
                      Lexeme    : constant String := Scanners.Image (Tk, S);
                      New_Value : Machines.Bounded_Value;
+                     Op        : Machines.Machine_Op := Machines.Error;
                   begin
                      if Scanners.Is_Number (Lexeme) then
                         begin
@@ -34,8 +35,13 @@ begin
                              ("Pushed value: " & New_Value'Image);
                         exception
                            when Constraint_Error =>
+                              Ada.Text_IO.Put_Line
+                                ("Error in value:" & Lexeme);
                               null;
                         end;
+                     else
+                        Op := Machines.To_Machine_Op (Lexeme);
+                        Machines.Execute (M, Op);
                      end if;
                   end;
                   Ada.Text_IO.Put_Line (Tk'Image);

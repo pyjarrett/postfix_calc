@@ -184,8 +184,16 @@ is
          when '.' =>
             Found_Decimal := True;
 
-         when others =>
+         when '0' .. '9' =>
             null;
+
+         when '-' =>
+            if Input'Length = 1 then
+               return False;
+            end if;
+
+         when others =>
+            return False;
       end case;
 
       for X of Input (Input'First + 1 .. Input'Last) loop
