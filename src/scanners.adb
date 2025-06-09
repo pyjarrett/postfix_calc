@@ -182,7 +182,11 @@ is
 
       case Input (Input'First) is
          when '.' =>
-            Found_Decimal := True;
+            if Input'Length = 1 then
+               return False;
+            else
+               Found_Decimal := True;
+            end if;
 
          when '0' .. '9' =>
             null;
