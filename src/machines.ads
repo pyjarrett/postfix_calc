@@ -146,6 +146,7 @@ is
 
    procedure Op_Dupe (Self : in out Machine)
    with
+     Global         => null,
      Pre            => Is_Running (Self),
      Contract_Cases =>
        (Is_Stack_Full (Self)  =>
