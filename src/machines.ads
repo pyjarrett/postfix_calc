@@ -93,6 +93,11 @@ is
           Is_Running (Self) and then Stack_Size (Self) = Stack_Size (Self'Old),
         others                                 => true);
 
+   function To_Machine_Op (Input : String) return Machine_Op
+   with Global => null;
+
+private
+
    procedure Op_Add (Self : in out Machine)
    with
      Global         => null,
@@ -167,6 +172,4 @@ is
           (Is_Running (Self)
            and then Stack_Size (Self) = Stack_Size (Self'Old) - 1));
 
-   function To_Machine_Op (Input : String) return Machine_Op
-   with Global => null;
 end Machines;
