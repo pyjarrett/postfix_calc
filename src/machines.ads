@@ -20,15 +20,10 @@ is
    type Machine_Op is
      (Add, Subtract, Multiply, Divide, Dupe, Print, Dump_Stack, Error, Reset);
 
-   type Machine is record
-      Status : Machine_Status := Ok;
-      Stack  : Machine_Stack;
-      Top    : Element_Count := 0;
-   end record;
+   type Machine is private;
 
    function Status (Self : Machine) return Machine_Status
-   is (Self.Status)
-   with Global => null, Depends => (Status'Result => Self);
+   with Global => null;
 
    function Is_Running (Self : Machine) return Boolean
    is (Status (Self) = Ok)
@@ -39,7 +34,6 @@ is
    with Global => null;
 
    function Stack_Size (Self : Machine) return Element_Count
-   is (Self.Top)
    with Global => null;
 
    function Is_Stack_Empty (Self : Machine) return Boolean
@@ -48,16 +42,12 @@ is
 
    function Is_Stack_Full (Self : Machine) return Boolean
    is (Stack_Size (Self) = Max_Stack_Size)
-   with
-     Global => null,
-     Post   => Is_Stack_Full'Result = (Self.Top = Max_Stack_Size);
+   with Global => null;
 
    function Peek (Self : Machine) return Value
-   is (Self.Stack (Stack_Index (Stack_Size (Self))))
    with
-     Global  => null,
-     Depends => (Peek'Result => Self),
-     Pre     => not Is_Stack_Empty (Self) and then Is_Running (Self);
+     Global => null,
+     Pre    => not Is_Stack_Empty (Self) and then Is_Running (Self);
 
    procedure Push (Self : in out Machine; Element : Value)
    with
@@ -69,7 +59,6 @@ is
         others               =>
           Is_Running (Self)
           and then not Is_Stack_Empty (Self)
-          and then Self.Top = Self'Old.Top + 1
           and then Stack_Size (Self) = Stack_Size (Self'Old) + 1
           and then Peek (Self) = Element);
 
@@ -97,6 +86,21 @@ is
    with Global => null;
 
 private
+
+   type Machine is record
+      Status : Machine_Status := Ok;
+      Stack  : Machine_Stack;
+      Top    : Element_Count := 0;
+   end record;
+
+   function Status (Self : Machine) return Machine_Status
+   is (Self.Status);
+
+   function Stack_Size (Self : Machine) return Element_Count
+   is (Self.Top);
+
+   function Peek (Self : Machine) return Value
+   is (Self.Stack (Stack_Index (Stack_Size (Self))));
 
    procedure Op_Add (Self : in out Machine)
    with
