@@ -34,8 +34,6 @@ begin
                               New_Value :=
                                 Machines.Bounded_Value'Value (Lexeme);
                               Machines.Push (M, New_Value);
-                              Ada.Text_IO.Put_Line
-                                ("Pushed value: " & New_Value'Image);
                            exception
                               when Constraint_Error =>
                                  Ada.Text_IO.Put_Line

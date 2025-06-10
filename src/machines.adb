@@ -3,6 +3,7 @@ with Ada.Text_IO;
 package body Machines
   with SPARK_Mode => On
 is
+   package Value_IO is new Ada.Text_IO.Float_IO (Value);
 
    procedure Push (Self : in out Machine; Element : Value) is
    begin
@@ -67,10 +68,19 @@ is
             Op_Print (Self);
 
          when Dump_Stack =>
-            Ada.Text_IO.Put_Line ("Status: " & Self.Status'Image);
-            for Index in reverse 1 .. Self.Top loop
-               Ada.Text_IO.Put_Line (Self.Stack (Index)'Image);
+            Ada.Text_IO.Put_Line
+              (Self.Status'Image
+               & " : "
+               & Stack_Size (Self)'Image
+               & "/"
+               & Max_Stack_Size'Image);
+            for Index in 1 .. Self.Top loop
+               Ada.Text_IO.Put ("[ ");
+               Value_IO.Put (Item => Self.Stack (Index), Aft => 5, Exp => 0);
+               Ada.Text_IO.Put (" ]");
             end loop;
+            Ada.Text_IO.Put_Line (" (top) ");
+            Ada.Text_IO.New_Line;
 
          when others =>
             Ada.Text_IO.Put_Line ("Ignored: " & Op'Image);
