@@ -8,10 +8,7 @@ is
 
    -- Value definitions
    type Value is new Interfaces.IEEE_Float_64;
-   Max_Value : constant := 1.0e5;
-   Min_Value : constant := -1.0e5;
-   Max_Sum   : constant := 2 * Max_Value;
-   subtype Bounded_Value is Value range Min_Value .. Max_Value;
+   subtype Bounded_Value is Value range -1.0e5 .. 1.0e5;
    subtype Prohibited_Divisor is Value range -1.0e-4 .. 1.0e-4;
 
    -- Stack definitions
