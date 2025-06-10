@@ -23,7 +23,7 @@ alr with gnatprove
 Then run the provers.
 
 ```
-alr gnatprove --mode=all --prover=all --level=2 --steps=3000
+alr gnatprove --mode=all --prover=all --level=2
 ```
 
 Speed up evaluation using parallel analysis with the `-j` flag, like `-j12` if
