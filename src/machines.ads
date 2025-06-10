@@ -6,16 +6,11 @@ is
    type Machine_Status is
      (Ok, Stack_Overflow, Stack_Underflow, Value_Out_Of_Bounds);
 
-   -- Value definitions
    type Value is new Interfaces.IEEE_Float_64;
    subtype Bounded_Value is Value range -1.0e5 .. 1.0e5;
-   subtype Prohibited_Divisor is Value range -1.0e-4 .. 1.0e-4;
 
-   -- Stack definitions
    Max_Stack_Size : constant := 1024;
    type Element_Count is new Integer range 0 .. Max_Stack_Size;
-   subtype Stack_Index is Element_Count range 1 .. Max_Stack_Size;
-   type Machine_Stack is array (Stack_Index) of Value;
 
    type Machine_Op is
      (Add, Subtract, Multiply, Divide, Dupe, Print, Dump_Stack, Error, Reset);
@@ -86,6 +81,11 @@ is
    with Global => null;
 
 private
+
+   subtype Prohibited_Divisor is Value range -1.0e-4 .. 1.0e-4;
+   subtype Stack_Index is Element_Count range 1 .. Max_Stack_Size;
+
+   type Machine_Stack is array (Stack_Index) of Value;
 
    type Machine is record
       Status : Machine_Status := Ok;
