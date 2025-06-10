@@ -31,7 +31,7 @@ is
    with Global => null, Depends => (Status'Result => Self);
 
    function Is_Running (Self : Machine) return Boolean
-   is (Self.Status = Ok)
+   is (Status (Self) = Ok)
    with Global => null, Depends => (Is_Running'Result => Self);
 
    function Is_Stopped (Self : Machine) return Boolean
@@ -43,7 +43,7 @@ is
    with Global => null;
 
    function Is_Stack_Empty (Self : Machine) return Boolean
-   is (Self.Top = 0)
+   is (Stack_Size (Self) = 0)
    with Global => null;
 
    function Is_Stack_Full (Self : Machine) return Boolean
@@ -53,7 +53,7 @@ is
      Post   => Is_Stack_Full'Result = (Self.Top = Max_Stack_Size);
 
    function Peek (Self : Machine) return Value
-   is (Self.Stack (Stack_Index (Self.Top)))
+   is (Self.Stack (Stack_Index (Stack_Size (Self))))
    with
      Global  => null,
      Depends => (Peek'Result => Self),
@@ -63,7 +63,7 @@ is
    with
      Global         => null,
      Depends        => (Self => +Element),
-     Pre            => Self.Status = Ok,
+     Pre            => Status (self) = Ok,
      Contract_Cases =>
        (Is_Stack_Full (Self) => Status (Self) = Stack_Overflow,
         others               =>
