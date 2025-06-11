@@ -48,10 +48,10 @@ is
    is (Stack_Size (Self) = Max_Stack_Size)
    with Global => null;
 
-   function Peek (Self : Machine) return Value
+   function Peek (Self : Machine) return Bounded_Value
    with Global => null, Pre => not Is_Stack_Empty (Self);
 
-   function Peek (Self : Machine; Depth : Element_Count) return Value
+   function Peek (Self : Machine; Depth : Element_Count) return Bounded_Value
    with
      Global => null,
      Pre    => Stack_Size (Self) > Depth and then not Is_Stack_Empty (Self);
@@ -125,10 +125,10 @@ private
    function Stack_Size (Self : Machine) return Element_Count
    is (Self.Top);
 
-   function Peek (Self : Machine) return Value
+   function Peek (Self : Machine) return Bounded_Value
    is (Self.Stack (Stack_Index (Stack_Size (Self))));
 
-   function Peek (Self : Machine; Depth : Element_Count) return Value
+   function Peek (Self : Machine; Depth : Element_Count) return Bounded_Value
    is (Self.Stack (Stack_Index (Stack_Size (Self) - Depth)));
 
    procedure Op_Add (Self : in out Machine)
