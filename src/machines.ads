@@ -7,7 +7,7 @@ is
      (Ok, Stack_Overflow, Stack_Underflow, Value_Out_Of_Bounds);
 
    type Value is new Interfaces.IEEE_Float_64;
-   subtype Bounded_Value is Value range -1.0e5 .. 1.0e5;
+   subtype Bounded_Value is Value range -1.0e24 .. 1.0e24;
 
    Max_Stack_Size : constant := 1024;
    type Element_Count is new Integer range 0 .. Max_Stack_Size;
@@ -82,6 +82,12 @@ is
 
 private
 
+   subtype Addend is Bounded_Value;
+   subtype Minuend is Addend;
+   subtype Subtrahend is Minuend;
+   subtype Multiplier is Addend;
+   subtype Multiplicand is Addend;
+   subtype Dividend is Addend;
    subtype Prohibited_Divisor is Value range -1.0e-4 .. 1.0e-4;
    subtype Stack_Index is Element_Count range 1 .. Max_Stack_Size;
 

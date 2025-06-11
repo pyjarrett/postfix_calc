@@ -1,4 +1,5 @@
 with Ada.Text_IO;
+with Machines;
 
 package body Machines
   with SPARK_Mode => On
@@ -7,6 +8,11 @@ is
    begin
       if Self.Top = Max_Stack_Size then
          Self.Status := Stack_Overflow;
+         return;
+      end if;
+
+      if Element not in Bounded_Value then
+         Self.Status := Machines.Value_Out_Of_Bounds;
          return;
       end if;
 
@@ -97,13 +103,13 @@ is
 
       Pop (Self, Right);
       Pop (Self, Left);
-      if Left not in Bounded_Value or else Right not in Bounded_Value then
+      if Left in Addend and then Right in Addend then
+         Push (Self, Left + Right);
+      else
          Push (Self, Left);
          Push (Self, Right);
          Self.Status := Value_Out_Of_Bounds;
-         return;
       end if;
-      Push (Self, Left + Right);
    end Op_Add;
 
    procedure Op_Subtract (Self : in out Machine) is
@@ -117,13 +123,13 @@ is
 
       Pop (Self, Right);
       Pop (Self, Left);
-      if Left not in Bounded_Value or else Right not in Bounded_Value then
+      if Left in Minuend and then Right in Subtrahend then
+         Push (Self, Left - Right);
+      else
          Push (Self, Left);
          Push (Self, Right);
          Self.Status := Value_Out_Of_Bounds;
-         return;
       end if;
-      Push (Self, Left - Right);
    end Op_Subtract;
 
    procedure Op_Multiply (Self : in out Machine) is
@@ -137,13 +143,14 @@ is
 
       Pop (Self, Right);
       Pop (Self, Left);
-      if Left not in Bounded_Value or else Right not in Bounded_Value then
+
+      if Left in Multiplier and then Right in Multiplicand then
+         Push (Self, Left * Right);
+      else
          Push (Self, Left);
          Push (Self, Right);
          Self.Status := Value_Out_Of_Bounds;
-         return;
       end if;
-      Push (Self, Left * Right);
    end Op_Multiply;
 
    procedure Op_Divide (Self : in out Machine) is
@@ -158,13 +165,12 @@ is
       Pop (Self, Right);
       Pop (Self, Left);
 
-      if Left in Bounded_Value and then Right not in Prohibited_Divisor then
+      if Left in Dividend and then Right not in Prohibited_Divisor then
          Push (Self, Left / Right);
       else
          Push (Self, Left);
          Push (Self, Right);
          Self.Status := Value_Out_Of_Bounds;
-         return;
       end if;
    end Op_Divide;
 
