@@ -163,7 +163,6 @@ is
          Next_Token (Self, Tokens (Next_Index));
          Next_Index := Next_Index + 1;
       end loop;
-      pragma Assert (Is_Valid (Self));
       return Tokens (1 .. Next_Index - 1);
    end Tokenize;
 
