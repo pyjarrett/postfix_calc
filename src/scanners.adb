@@ -146,7 +146,6 @@ is
    function Tokenize (Self : in out Scanner) return Token_Array is
       Tokens     : Token_Array (1 .. 1024) := [others => <>];
       Next_Index : Positive := Tokens'First;
-      Num_Tokens : Natural := 0;
    begin
       pragma Assert (Tokens'Length <= Positive'Last - 1);
       while Has_Next (Self) and then Next_Index <= Tokens'Last loop
@@ -155,10 +154,6 @@ is
              (Is_Valid (Self)
                 and then Remaining_Characters (Self)
                          <= Remaining_Characters (Self'Loop_Entry)
-                and then Next_Index >= Tokens'First
-                and then Next_Index <= Tokens'Last
-                and then Num_Tokens <= Tokens'Length
-                and then Num_Tokens <= Positive'Last - 1
                 and then (for all X in 1 .. Next_Index - 1
                           => Tokens (X).Lexeme.Lower <= Tokens (X).Lexeme.Upper
                              and then Tokens (X).Lexeme.Upper
@@ -168,9 +163,8 @@ is
          Next_Token (Self, Tokens (Next_Index));
          Next_Index := Next_Index + 1;
       end loop;
-      Num_Tokens := Next_Index - 1;
       pragma Assert (Is_Valid (Self));
-      return Tokens (1 .. Num_Tokens);
+      return Tokens (1 .. Next_Index - 1);
    end Tokenize;
 
    function Is_Number (Input : String) return Boolean is
