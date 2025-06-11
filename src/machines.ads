@@ -47,7 +47,7 @@ is
      Global => null,
      Pre    => Stack_Size (Self) > Depth and then not Is_Stack_Empty (Self);
 
-   procedure Push (Self : in out Machine; Element : Value)
+   procedure Push (Self : in out Machine; Element : Bounded_Value)
    with
      Global         => null,
      Depends        => (Self => +Element),
@@ -101,7 +101,7 @@ private
    subtype Prohibited_Divisor is Value range -1.0e-4 .. 1.0e-4;
    subtype Stack_Index is Element_Count range 1 .. Max_Stack_Size;
 
-   type Machine_Stack is array (Stack_Index) of Value;
+   type Machine_Stack is array (Stack_Index) of Bounded_Value;
 
    type Machine is record
       Status : Machine_Status := Ok;

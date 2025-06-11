@@ -3,7 +3,7 @@ with Ada.Text_IO;
 package body Machines
   with SPARK_Mode => On
 is
-   procedure Push (Self : in out Machine; Element : Value) is
+   procedure Push (Self : in out Machine; Element : Bounded_Value) is
    begin
       if Is_Stack_Full (Self) then
          Self.Status := Stack_Overflow;
@@ -99,7 +99,10 @@ is
 
       Right := Peek (Self, 0);
       Left := Peek (Self, 1);
-      if Left in Addend and then Right in Addend then
+      if Left in Addend
+        and then Right in Addend
+        and then Left + Right in Bounded_Value
+      then
          Pop (Self, 2);
          Push (Self, Left + Right);
       else
@@ -119,7 +122,10 @@ is
 
       Right := Peek (Self, 0);
       Left := Peek (Self, 1);
-      if Left in Minuend and then Right in Subtrahend then
+      if Left in Minuend
+        and then Right in Subtrahend
+        and then Left - Right in Bounded_Value
+      then
          Pop (Self, 2);
          Push (Self, Left - Right);
       else
@@ -137,7 +143,10 @@ is
 
       Right := Peek (Self, 0);
       Left := Peek (Self, 1);
-      if Left in Multiplier and then Right in Multiplicand then
+      if Left in Multiplier
+        and then Right in Multiplicand
+        and then Left * Right in Bounded_Value
+      then
          Pop (Self, 2);
          Push (Self, Left * Right);
       else
@@ -155,7 +164,10 @@ is
 
       Right := Peek (Self, 0);
       Left := Peek (Self, 1);
-      if Left in Dividend and then Right not in Prohibited_Divisor then
+      if Left in Dividend
+        and then Right not in Prohibited_Divisor
+        and then Left / Right in Bounded_Value
+      then
          Pop (Self, 2);
          Push (Self, Left / Right);
       else
