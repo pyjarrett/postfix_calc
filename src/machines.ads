@@ -40,20 +40,21 @@ is
    with Global => null;
 
    function Peek (Self : Machine) return Value
+   with Global => null, Pre => not Is_Stack_Empty (Self);
+
+   function Peek (Self : Machine; Depth : Element_Count) return Value
    with
      Global => null,
-     Pre    => not Is_Stack_Empty (Self) and then Is_Running (Self);
+     Pre    => Stack_Size (Self) > Depth and then not Is_Stack_Empty (Self);
 
    procedure Push (Self : in out Machine; Element : Value)
    with
      Global         => null,
      Depends        => (Self => +Element),
-     Pre            => Status (self) = Ok,
      Contract_Cases =>
        (Is_Stack_Full (Self) => Status (Self) = Stack_Overflow,
         others               =>
-          Is_Running (Self)
-          and then not Is_Stack_Empty (Self)
+          not Is_Stack_Empty (Self)
           and then Stack_Size (Self) = Stack_Size (Self'Old) + 1
           and then Peek (Self) = Element);
 
@@ -62,11 +63,20 @@ is
      Global         => null,
      Pre            => Is_Running (Self),
      Contract_Cases =>
-       (Stack_Size (Self) = 0 => Status (Self) = Stack_Underflow,
+       (Is_Stack_Empty (Self) => Status (Self) = Stack_Underflow,
         others                =>
-          Is_Running (Self)
-          and then Stack_Size (Self) = Stack_Size (Self'Old) - 1
-          and then Peek (Self'Old) = Element);
+          Stack_Size (Self) = Stack_Size (Self'Old) - 1
+          and then Peek (Self'Old) = Element
+          and then Is_Running (Self) = Is_Running (Self'Old));
+
+   procedure Pop (Self : in out Machine; Count : Element_Count)
+   with
+     Global         => null,
+     Contract_Cases =>
+       (Stack_Size (Self) >= Count =>
+          Stack_Size (Self) = Stack_Size (Self'Old) - Count,
+        Stack_Size (Self) < Count  =>
+          Stack_Size (Self) = Stack_Size (Self'Old));
 
    procedure Execute (Self : in out Machine; Op : Machine_Op)
    with
@@ -107,6 +117,9 @@ private
 
    function Peek (Self : Machine) return Value
    is (Self.Stack (Stack_Index (Stack_Size (Self))));
+
+   function Peek (Self : Machine; Depth : Element_Count) return Value
+   is (Self.Stack (Stack_Index (Stack_Size (Self) - Depth)));
 
    procedure Op_Add (Self : in out Machine)
    with
@@ -168,8 +181,7 @@ private
           Status (Self) = Stack_Underflow
           and then Stack_Size (Self) = Stack_Size (Self'Old),
         others                =>
-          (Is_Running (Self)
-           and then Stack_Size (Self) = Stack_Size (Self'Old) + 1));
+          (Stack_Size (Self) = Stack_Size (Self'Old) + 1));
 
    procedure Op_Print (Self : in out Machine)
    with

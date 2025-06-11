@@ -1,36 +1,38 @@
 with Ada.Text_IO;
-with Machines;
 
 package body Machines
   with SPARK_Mode => On
 is
    procedure Push (Self : in out Machine; Element : Value) is
    begin
-      if Self.Top = Max_Stack_Size then
+      if Is_Stack_Full (Self) then
          Self.Status := Stack_Overflow;
          return;
       end if;
 
       Self.Top := Self.Top + 1;
-      pragma Assert (Self.Top > 0);
       pragma Assert (Self.Top in Stack_Index);
-      pragma Assert (Self.Status = Ok);
       Self.Stack (Self.Top) := Element;
       pragma Assert (Self.Stack (Self.Top) = Element);
-      pragma Assert (Self.Status = Ok);
    end Push;
 
    procedure Pop (Self : in out Machine; Element : in out Value) is
    begin
       pragma Assert (Is_Running (Self));
 
-      if Stack_Size (Self) = 0 then
+      if Is_Stack_Empty (Self) then
          Self.Status := Stack_Underflow;
-         return;
+      else
+         Element := Peek (Self);
+         Self.Top := Self.Top - 1;
       end if;
+   end Pop;
 
-      Element := Peek (Self);
-      Self.Top := Self.Top - 1;
+   procedure Pop (Self : in out Machine; Count : Element_Count) is
+   begin
+      if Stack_Size (Self) >= Count then
+         Self.Top := Self.Top - Count;
+      end if;
    end Pop;
 
    procedure Execute (Self : in out Machine; Op : Machine_Op) is
@@ -108,21 +110,21 @@ is
    end Op_Add;
 
    procedure Op_Subtract (Self : in out Machine) is
-      Left  : Value := 0.0;
-      Right : Value := 0.0;
+      Left, Right : Value;
    begin
       if Stack_Size (Self) < 2 then
          Self.Status := Stack_Underflow;
          return;
       end if;
 
-      Pop (Self, Right);
-      Pop (Self, Left);
+      pragma Assert (Stack_Size (Self) >= 2);
+
+      Right := Peek (Self, 0);
+      Left := Peek (Self, 1);
       if Left in Minuend and then Right in Subtrahend then
+         Pop (Self, 2);
          Push (Self, Left - Right);
       else
-         Push (Self, Left);
-         Push (Self, Right);
          Self.Status := Value_Out_Of_Bounds;
       end if;
    end Op_Subtract;
