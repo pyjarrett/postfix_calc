@@ -56,7 +56,9 @@ is
         others               =>
           not Is_Stack_Empty (Self)
           and then Stack_Size (Self) = Stack_Size (Self'Old) + 1
-          and then Peek (Self) = Element);
+          and then Peek (Self) = Element
+          and then (for all X in 0 .. Stack_Size (Self'Old) - 1
+                    => Peek (Self, X + 1) = Peek (Self'Old, X)));
 
    procedure Pop (Self : in out Machine; Element : in out Value)
    with
@@ -186,7 +188,8 @@ private
           and then Stack_Size (Self) = Stack_Size (Self'Old),
         others                =>
           (Stack_Size (Self) = Stack_Size (Self'Old) + 1
-           and then Peek (Self, 0) = Peek (Self'Old)));
+           and then Peek (Self, 0) = Peek (Self'Old, 0)
+           and then Peek (Self, 1) = Peek (Self'Old, 0)));
 
    procedure Op_Print (Self : in out Machine)
    with
