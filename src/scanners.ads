@@ -23,35 +23,29 @@ is
 
    No_More_Characters : constant Character := Ada.Characters.Latin_1.NUL;
 
-   function Has_Input (Self : Scanner) return Boolean
-   with Global => null;
+   function Has_Input (Self : Scanner) return Boolean;
 
-   function Has_More_Characters (Self : Scanner) return Boolean
-   with Global => null;
+   function Has_More_Characters (Self : Scanner) return Boolean;
 
-   function Has_Lexeme (Self : Scanner) return Boolean
-   with Global => null;
+   function Has_Lexeme (Self : Scanner) return Boolean;
 
    procedure Ignore_Lexeme (Self : in out Scanner)
    with
-     Global => null,
-     Post   =>
+     Post =>
        Lexeme_Size (Self) = 0
        and then Remaining_Characters (Self) = Remaining_Characters (Self'Old)
        and then Has_Next (Self) = Has_Next (Self'Old)
        and then Peek (Self) = Peek (Self'Old);
 
    function Lexeme_Size (Self : Scanner) return Range_Size
-   with Global => null, Post => Lexeme_Size'Result <= Input_Size (Self);
+   with Post => Lexeme_Size'Result <= Input_Size (Self);
 
-   function Remaining_Characters (Self : Scanner) return Range_Size
-   with Global => null;
+   function Remaining_Characters (Self : Scanner) return Range_Size;
 
    function Input_Size (Self : Scanner) return Range_Size;
 
    procedure Load_Input (Self : in out Scanner; Input : String)
    with
-     Global         => null,
      Depends        => (Self => +Input),
      Pre            => Input'Length <= Max_Input_Length,
      Contract_Cases =>
@@ -66,20 +60,17 @@ is
 
    function Has_Next (Self : Scanner) return Boolean
    with
-     Global => null,
-     Post   =>
+     Post =>
        ((Has_Next'Result and then Remaining_Characters (Self) > 0)
         or else (not Has_Next'Result and then Remaining_Characters (Self) = 0)
         or else (not Has_Next'Result and then not Has_Input (Self)));
 
-   function Peek (Self : Scanner) return Character
-   with Global => null;
+   function Peek (Self : Scanner) return Character;
 
    procedure Next (Self : in out Scanner)
    with
-     Global => null,
-     Pre    => Has_Next (Self),
-     Post   =>
+     Pre  => Has_Next (Self),
+     Post =>
        Lexeme_Size (Self) = Lexeme_Size (Self'Old) + 1
        and then Remaining_Characters (Self) < Remaining_Characters (Self'Old);
 
@@ -97,9 +88,8 @@ is
 
    procedure Next_Token (Self : in out Scanner; Tk : out Token)
    with
-     Global => null,
-     Pre    => Has_Next (Self) and then Has_More_Characters (Self),
-     Post   =>
+     Pre  => Has_Next (Self) and then Has_More_Characters (Self),
+     Post =>
        (Remaining_Characters (Self) < Remaining_Characters (Self'Old))
        and then (Tk.Kind = End_Of_Input
                  or else (Tk.Kind = Word
@@ -114,10 +104,9 @@ is
 
    function Tokenize (Self : in out Scanner) return Token_Array
    with
-     Global => null,
      Side_Effects,
-     Pre    => Has_More_Characters (Self),
-     Post   =>
+     Pre  => Has_More_Characters (Self),
+     Post =>
        (if Has_Next (Self'Old)
         then Remaining_Characters (Self) < Remaining_Characters (Self'Old));
 
@@ -198,12 +187,11 @@ private
    procedure Skip_Whitespace
      (Self : in out Scanner; Skipped_Whitespace : out Boolean)
    with
-     Global => null,
-     Pre    =>
+     Pre  =>
        Is_Valid (Self)
        and then Has_Next (Self)
        and then Has_More_Characters (Self),
-     Post   =>
+     Post =>
        Is_Valid (Self)
        and then (Self.State = (if Has_Next (Self) then Ready else Complete))
        and then (if Has_Next (Self) then not ACH.Is_Space (Peek (Self)))
