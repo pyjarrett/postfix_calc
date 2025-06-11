@@ -130,7 +130,8 @@ private
           Status (Self) = Stack_Underflow
           and then Stack_Size (Self) = Stack_Size (Self'Old),
         others                =>
-          ((Stack_Size (Self) = Stack_Size (Self'Old) - 1)
+          ((Stack_Size (Self) = Stack_Size (Self'Old) - 1
+            and then Peek (Self) = Peek (Self'Old, 0) + Peek (Self'Old, 1))
            or else (Self.Status = Value_Out_Of_Bounds)));
 
    procedure Op_Subtract (Self : in out Machine)
@@ -142,7 +143,8 @@ private
           Status (Self) = Stack_Underflow
           and then Stack_Size (Self) = Stack_Size (Self'Old),
         others                =>
-          ((Stack_Size (Self) = Stack_Size (Self'Old) - 1)
+          ((Stack_Size (Self) = Stack_Size (Self'Old) - 1
+            and then Peek (Self) = Peek (Self'Old, 1) - Peek (Self'Old, 0))
            or else (Self.Status = Value_Out_Of_Bounds)));
 
    procedure Op_Multiply (Self : in out Machine)
@@ -154,7 +156,8 @@ private
           Status (Self) = Stack_Underflow
           and then Stack_Size (Self) = Stack_Size (Self'Old),
         others                =>
-          ((Stack_Size (Self) = Stack_Size (Self'Old) - 1)
+          ((Stack_Size (Self) = Stack_Size (Self'Old) - 1
+            and then Peek (Self) = Peek (Self'Old, 1) * Peek (Self'Old, 0))
            or else (Self.Status = Value_Out_Of_Bounds)));
 
    procedure Op_Divide (Self : in out Machine)
@@ -166,7 +169,8 @@ private
           Status (Self) = Stack_Underflow
           and then Stack_Size (Self) = Stack_Size (Self'Old),
         others                =>
-          ((Stack_Size (Self) = Stack_Size (Self'Old) - 1)
+          ((Stack_Size (Self) = Stack_Size (Self'Old) - 1
+            and then Peek (Self) = Peek (Self'Old, 1) / Peek (Self'Old, 0))
            or else (Self.Status = Value_Out_Of_Bounds)));
 
    procedure Op_Dupe (Self : in out Machine)
@@ -181,7 +185,8 @@ private
           Status (Self) = Stack_Underflow
           and then Stack_Size (Self) = Stack_Size (Self'Old),
         others                =>
-          (Stack_Size (Self) = Stack_Size (Self'Old) + 1));
+          (Stack_Size (Self) = Stack_Size (Self'Old) + 1
+           and then Peek (Self, 0) = Peek (Self'Old)));
 
    procedure Op_Print (Self : in out Machine)
    with
