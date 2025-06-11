@@ -60,6 +60,9 @@ is
          when Divide =>
             Op_Divide (Self);
 
+         when Negate =>
+            Op_Negate (Self);
+
          when Dupe =>
             Op_Dupe (Self);
 
@@ -173,6 +176,19 @@ is
       end if;
    end Op_Divide;
 
+   procedure Op_Negate (Self : in out Machine) is
+      Element : Value;
+   begin
+      if Is_Stack_Empty (Self) then
+         Self.Status := Stack_Underflow;
+         return;
+      end if;
+
+      Element := Peek (Self);
+      Pop (Self, 1);
+      Push (Self, -Element);
+   end Op_Negate;
+
    procedure Op_Dupe (Self : in out Machine) is
    begin
       if Is_Stack_Full (Self) then
@@ -210,6 +226,8 @@ is
          return Multiply;
       elsif Input = "/" then
          return Divide;
+      elsif Input = "negate" then
+         return Negate;
       elsif Input = "." then
          return Print;
       elsif Input = "dup" then

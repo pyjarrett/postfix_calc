@@ -13,7 +13,16 @@ is
    type Element_Count is new Integer range 0 .. Max_Stack_Size;
 
    type Machine_Op is
-     (Add, Subtract, Multiply, Divide, Dupe, Print, Dump_Stack, Error, Reset);
+     (Add,
+      Subtract,
+      Multiply,
+      Divide,
+      Negate,
+      Dupe,
+      Print,
+      Dump_Stack,
+      Error,
+      Reset);
 
    type Machine is private;
 
@@ -173,6 +182,18 @@ private
           ((Stack_Size (Self) = Stack_Size (Self'Old) - 1
             and then Peek (Self) = Peek (Self'Old, 1) / Peek (Self'Old, 0))
            or else (Self.Status = Value_Out_Of_Bounds)));
+
+   procedure Op_Negate (Self : in out Machine)
+   with
+     Global         => null,
+     Pre            => Is_Running (Self),
+     Contract_Cases =>
+       (Is_Stack_Empty (Self) =>
+          Status (Self) = Stack_Underflow
+          and then Stack_Size (Self) = Stack_Size (Self'Old),
+        others                =>
+          (Stack_Size (Self) = Stack_Size (Self'Old)
+           and then Peek (Self) = -Peek (Self'Old)));
 
    procedure Op_Dupe (Self : in out Machine)
    with
