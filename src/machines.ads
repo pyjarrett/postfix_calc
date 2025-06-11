@@ -63,7 +63,6 @@ is
    procedure Pop (Self : in out Machine; Element : in out Value)
    with
      Global         => null,
-     Pre            => Is_Running (Self),
      Contract_Cases =>
        (Is_Stack_Empty (Self) => Status (Self) = Stack_Underflow,
         others                =>

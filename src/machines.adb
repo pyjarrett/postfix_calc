@@ -18,8 +18,6 @@ is
 
    procedure Pop (Self : in out Machine; Element : in out Value) is
    begin
-      pragma Assert (Is_Running (Self));
-
       if Is_Stack_Empty (Self) then
          Self.Status := Stack_Underflow;
       else
