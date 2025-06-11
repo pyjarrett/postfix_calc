@@ -89,8 +89,7 @@ is
    end Execute;
 
    procedure Op_Add (Self : in out Machine) is
-      Left  : Value := 0.0;
-      Right : Value := 0.0;
+      Left, Right : Value;
    begin
       pragma Assert (Is_Running (Self));
       if Stack_Size (Self) < 2 then
@@ -98,13 +97,12 @@ is
          return;
       end if;
 
-      Pop (Self, Right);
-      Pop (Self, Left);
+      Right := Peek (Self, 0);
+      Left := Peek (Self, 1);
       if Left in Addend and then Right in Addend then
+         Pop (Self, 2);
          Push (Self, Left + Right);
       else
-         Push (Self, Left);
-         Push (Self, Right);
          Self.Status := Value_Out_Of_Bounds;
       end if;
    end Op_Add;
@@ -130,43 +128,37 @@ is
    end Op_Subtract;
 
    procedure Op_Multiply (Self : in out Machine) is
-      Left  : Value := 0.0;
-      Right : Value := 0.0;
+      Left, Right : Value;
    begin
       if Stack_Size (Self) < 2 then
          Self.Status := Stack_Underflow;
          return;
       end if;
 
-      Pop (Self, Right);
-      Pop (Self, Left);
-
+      Right := Peek (Self, 0);
+      Left := Peek (Self, 1);
       if Left in Multiplier and then Right in Multiplicand then
+         Pop (Self, 2);
          Push (Self, Left * Right);
       else
-         Push (Self, Left);
-         Push (Self, Right);
          Self.Status := Value_Out_Of_Bounds;
       end if;
    end Op_Multiply;
 
    procedure Op_Divide (Self : in out Machine) is
-      Left  : Value := 0.0;
-      Right : Value := 1.0;
+      Left, Right : Value;
    begin
       if Stack_Size (Self) < 2 then
          Self.Status := Stack_Underflow;
          return;
       end if;
 
-      Pop (Self, Right);
-      Pop (Self, Left);
-
+      Right := Peek (Self, 0);
+      Left := Peek (Self, 1);
       if Left in Dividend and then Right not in Prohibited_Divisor then
+         Pop (Self, 2);
          Push (Self, Left / Right);
       else
-         Push (Self, Left);
-         Push (Self, Right);
          Self.Status := Value_Out_Of_Bounds;
       end if;
    end Op_Divide;
