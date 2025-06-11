@@ -7,16 +7,23 @@ procedure Postfix_Calc with SPARK_Mode => Off is
    M : Machines.Machine;
    S : Scanners.Scanner;
 begin
-   Ada.Text_IO.Put_Line (Machines.Status (M)'Image);
-
    loop
+      <<REPL_START>>
       declare
          Input : constant String := Ada.Text_IO.Get_Line;
-         use type Scanners.Small_Int;
       begin
          exit when Input = "exit" or else Input = "quit";
-         Scanners.Load_Input (S, Input);
 
+         if Input'Length > Scanners.Max_Input_Length then
+            Ada.Text_IO.Put_Line
+              ("Input line is too long:"
+               & Input'Length'Image
+               & ", max is"
+               & Scanners.Max_Input_Length'Image);
+            goto REPL_START;
+         end if;
+
+         Scanners.Load_Input (S, Input);
          while Scanners.Has_More_Characters (S) loop
             declare
                Tokens : constant Scanners.Token_Array := Scanners.Tokenize (S);
