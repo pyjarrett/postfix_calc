@@ -11,11 +11,6 @@ is
          return;
       end if;
 
-      if Element not in Bounded_Value then
-         Self.Status := Machines.Value_Out_Of_Bounds;
-         return;
-      end if;
-
       Self.Top := Self.Top + 1;
       pragma Assert (Self.Top > 0);
       pragma Assert (Self.Top in Stack_Index);
