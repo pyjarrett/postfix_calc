@@ -8,12 +8,18 @@ procedure Postfix_Calc with SPARK_Mode => Off is
    S : Scanners.Scanner;
 begin
    Ada.Text_IO.Put_Line ("Postfix calculator");
-   Ada.Text_IO.Put_Line ("Operations: + - * / negate dup dump");
+   Ada.Text_IO.Put_Line ("Operations: + - * / . negate dup dump reset");
    Ada.Text_IO.New_Line;
 
    loop
       <<REPL_START>>
-      Ada.Text_IO.Put (" > ");
+      Ada.Text_IO.Put
+        (Machines.Status (M)'Image
+         & ": Stack:"
+         & Machines.Stack_Size (M)'Image
+         & " /"
+         & Scanners.Max_Input_Length'Image
+         & " > ");
       declare
          Input : constant String := Ada.Text_IO.Get_Line;
       begin
