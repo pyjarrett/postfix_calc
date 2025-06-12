@@ -7,8 +7,13 @@ procedure Postfix_Calc with SPARK_Mode => Off is
    M : Machines.Machine;
    S : Scanners.Scanner;
 begin
+   Ada.Text_IO.Put_Line ("Postfix calculator");
+   Ada.Text_IO.Put_Line ("Operations: + - * / negate dup dump");
+   Ada.Text_IO.New_Line;
+
    loop
       <<REPL_START>>
+      Ada.Text_IO.Put (" > ");
       declare
          Input : constant String := Ada.Text_IO.Get_Line;
       begin
