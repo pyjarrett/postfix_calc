@@ -7,7 +7,7 @@ is
      (Ok, Stack_Overflow, Stack_Underflow, Value_Out_Of_Bounds);
 
    type Value is new Interfaces.IEEE_Float_64;
-   subtype Bounded_Value is Value range -1.0e24 .. 1.0e24;
+   subtype Bounded_Value is Value range -1.0e150 .. 1.0e150;
 
    Max_Stack_Size : constant := 1024;
    type Element_Count is new Integer range 0 .. Max_Stack_Size;
