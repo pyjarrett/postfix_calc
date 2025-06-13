@@ -19,4 +19,8 @@ project Postfix_Calc is
       for Artifacts (".") use ("share");
    end Install;
 
+   package Prove is
+      for Proof_Switches ("Ada") use ("--level=2");
+   end Prove;
+
 end Postfix_Calc;
